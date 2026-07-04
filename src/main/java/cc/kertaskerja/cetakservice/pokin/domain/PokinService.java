@@ -3,6 +3,7 @@ package cc.kertaskerja.cetakservice.pokin.domain;
 import cc.kertaskerja.cetakservice.client.perencanaan.PerencanaanClient;
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemdaCetakResponse;
 import cc.kertaskerja.cetakservice.common.LocalStorageService;
+import cc.kertaskerja.cetakservice.pdf.PageOrientation;
 import cc.kertaskerja.cetakservice.pdf.PokinPemdaPDFGenerator;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,7 @@ public class PokinService {
 
 
         byte[] pdf =
-                pokinPemdaPDFGenerator.generatePDF(response);
+                pokinPemdaPDFGenerator.generatePDF(response, PageOrientation.LANDSCAPE);
 
         localStorageService.save("latest-pokin.pdf", pdf);
 

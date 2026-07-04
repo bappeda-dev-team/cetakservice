@@ -20,7 +20,6 @@ import java.util.List;
 public class PokinPemdaPDFGenerator {
     private static final float BOX_WIDTH = 220f;
     private static final float BOX_HEIGHT = 70f;
-    private static final float BOX_HEADER_HEIGHT = 20f;
 
     private static final PDFont BOX_HEADER_FONT =
             new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
@@ -29,12 +28,10 @@ public class PokinPemdaPDFGenerator {
             new PDType1Font(Standard14Fonts.FontName.HELVETICA);
 
     private static final float CONNECTOR_LENGTH = 30f;
-    private static final float CONNECTOR_GAP = 20f;
     private static final float INLINE_GAP = 40f;
     private static final float VERTICAL_LINE_LENGTH = 30f;
 
-
-    public byte[] generatePDF(PokinPemdaCetakResponse response) {
+    public byte[] generatePDF(PokinPemdaCetakResponse response, PageOrientation pageOrientation) {
 
         PokinPemda root = response.item();
 
@@ -44,8 +41,11 @@ public class PokinPemdaPDFGenerator {
                 ByteArrayOutputStream output = new ByteArrayOutputStream()
         ) {
 
-            // tambah page
-            PDPage page = new PDPage(PDRectangle.A3);
+            // tambah page ukuran kertas: A3
+            PDPage page = new PDPage(
+                    pageOrientation.createRectangle(PDRectangle.A3)
+            );
+
             document.addPage(page);
 
             try (PDPageContentStream content =
