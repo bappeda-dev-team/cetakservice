@@ -72,9 +72,11 @@ public class PokinPemdaPDFGenerator {
                 drawKotakPokin(content, rootPos, root);
                 // childs
                 if (!root.childs().isEmpty()) {
-                    drawVerticalLine(content,
+                    ShapeUtils.drawVerticalLine(content,
                             rootPos.centerX(),
-                            rootPos.bottom());
+                            rootPos.bottom(),
+                            VERTICAL_LINE_LENGTH
+                            );
 
                     // coba 2 child
                     int childCount = 2;
@@ -106,17 +108,18 @@ public class PokinPemdaPDFGenerator {
 
                     float horizontalY = rootPos.bottom() - CONNECTOR_LENGTH;
 
-                    drawHorizontalLine(content,
+                    ShapeUtils.drawHorizontalLine(content,
                             firstChildPos.centerX(),
                             lastChildPos.centerX(),
                             horizontalY
                     );
 
                     for (NodePosition childPos : childPositions) {
-                        drawVerticalLine(
+                        ShapeUtils.drawVerticalLine(
                                 content,
                                 childPos.centerX(),
-                                horizontalY
+                                horizontalY,
+                                VERTICAL_LINE_LENGTH
                         );
                     }
                 }
@@ -157,28 +160,6 @@ public class PokinPemdaPDFGenerator {
         content.endText();
     }
 
-    private void drawVerticalLine(
-            PDPageContentStream content,
-            float x,
-            float y
-    ) throws IOException {
-        content.moveTo(x, y);
-        content.lineTo(x, y - VERTICAL_LINE_LENGTH);
-        content.stroke();
-    }
-
-    private void drawHorizontalLine(
-            PDPageContentStream content,
-            float startX,
-            float endX,
-            float y
-    ) throws IOException {
-
-        content.moveTo(startX, y);
-        content.lineTo(endX, y);
-        content.stroke();
-    }
-
     private void drawKotakPokin(
             PDPageContentStream content,
             NodePosition pos,
@@ -198,7 +179,8 @@ public class PokinPemdaPDFGenerator {
 
         content.stroke();
 
-        drawCenteredText(
+        // judul pokin
+        TextUtils.drawCenteredText(
                 content,
                 pokin.jenisPohon(),
                 pos.x(),
@@ -209,7 +191,8 @@ public class PokinPemdaPDFGenerator {
                 10f
         );
 
-        drawCenteredText(
+        // nama pokin
+        TextUtils.drawCenteredMultilineText(
                 content,
                 pokin.namaPohon(),
                 pos.x(),
@@ -219,30 +202,5 @@ public class PokinPemdaPDFGenerator {
                 BOX_BODY_FONT,
                 10f
         );
-    }
-
-    private void drawCenteredText(
-            PDPageContentStream content,
-            String text,
-            float x,
-            float y,
-            float width,
-            float height,
-            PDFont font,
-            float fontSize
-    ) throws IOException {
-
-        float textWidth = font.getStringWidth(text) / 1000 * fontSize;
-
-        float textX = x + (width - textWidth) / 2;
-
-        // Perkiraan posisi vertikal agar tampak di tengah
-        float textY = y + (height - fontSize) / 2 + (fontSize * 0.3f);
-
-        content.beginText();
-        content.setFont(font, fontSize);
-        content.newLineAtOffset(textX, textY);
-        content.showText(text);
-        content.endText();
     }
 }

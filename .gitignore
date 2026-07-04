@@ -36,8 +36,10 @@ out/
 ### VS Code ###
 .vscode/
 
-### STORAGE ###
-/storage
+### DEV LOCAL STORAGE ###
 storage
 ## DEV RESOURCE ##
-src/main/resources/application.dev.yaml
+/src/main/resources/application-dev.yaml
+
+### MAC ###
+.DS_Store
