@@ -12,11 +12,11 @@ public final class ShapeUtils {
     public static void drawVerticalLine(
             PDPageContentStream content,
             float x,
-            float y,
-            float lineLength
+            float startY,
+            float endY
     ) throws IOException {
-        content.moveTo(x, y);
-        content.lineTo(x, y - lineLength);
+        content.moveTo(x, startY);
+        content.lineTo(x, endY);
         content.stroke();
     }
 

@@ -2,6 +2,7 @@ package cc.kertaskerja.cetakservice.pdf;
 
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemda;
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemdaCetakResponse;
+import cc.kertaskerja.cetakservice.pdf.pokin.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -13,27 +14,26 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class PokinPemdaPDFGenerator {
-    private static final float BOX_WIDTH = 220f;
-    private static final float BOX_HEIGHT = 70f;
+    private final LayoutEngine layoutEngine;
+    private final PdfRenderer pdfRenderer;
+    private final ViewGenerator viewGenerator;
+    private final RenderTreeBuilder renderTreeBuilder;
 
-    private static final PDFont BOX_HEADER_FONT =
-            new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+    public  PokinPemdaPDFGenerator(
+            LayoutEngine layoutEngine,
+            PdfRenderer pdfRenderer,
+            ViewGenerator viewGenerator, RenderTreeBuilder renderTreeBuilder) {
+        this.layoutEngine = layoutEngine;
+        this.pdfRenderer = pdfRenderer;
+        this.viewGenerator = viewGenerator;
+        this.renderTreeBuilder = renderTreeBuilder;
+    }
 
-    private static final PDFont BOX_BODY_FONT =
-            new PDType1Font(Standard14Fonts.FontName.HELVETICA);
-
-    private static final float CONNECTOR_LENGTH = 30f;
-    private static final float INLINE_GAP = 40f;
-    private static final float VERTICAL_LINE_LENGTH = 30f;
-
-    public byte[] generatePDF(PokinPemdaCetakResponse response, PageOrientation pageOrientation) {
-
-        PokinPemda root = response.item();
+    public byte[] generatePDF(List<Node> roots) {
 
         try (
                 // berawal dari document
@@ -41,87 +41,28 @@ public class PokinPemdaPDFGenerator {
                 ByteArrayOutputStream output = new ByteArrayOutputStream()
         ) {
 
-            // tambah page ukuran kertas: A3
-            PDPage page = new PDPage(
-                    pageOrientation.createRectangle(PDRectangle.A3)
-            );
+            // tulis halaman judul di method ini
+            drawTitlePage(document);
 
-            document.addPage(page);
+            Node root = roots.getFirst();
 
-            try (PDPageContentStream content =
-                         new PDPageContentStream(document, page)) {
+            List<PagePlan> plans = viewGenerator.generate(root);
 
-                PDRectangle pageSize = page.getMediaBox();
-                float pageWidth = pageSize.getWidth();
-                float pageHeight = pageSize.getHeight();
+            for (PagePlan pagePlan : plans) {
+                PDPage page = new PDPage(PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A3));
+                document.addPage(page);
 
-                // judul
-                drawTitle(content, page, "POHON KINERJA " + response.nama());
+                Node renderTree = renderTreeBuilder.build(pagePlan);
+                LayoutResult layout = layoutEngine.layout(renderTree);
 
-                // root (tema)
-                float xRoot = (pageWidth - BOX_WIDTH) / 2;
-                float yRoot = pageHeight - 200;
-
-                NodePosition rootPos = new NodePosition(
-                        xRoot,
-                        yRoot,
-                        BOX_WIDTH,
-                        BOX_HEIGHT
-                );
-
-                drawKotakPokin(content, rootPos, root);
-                // childs
-                if (!root.childs().isEmpty()) {
-                    ShapeUtils.drawVerticalLine(content,
-                            rootPos.centerX(),
-                            rootPos.bottom(),
-                            VERTICAL_LINE_LENGTH
-                            );
-
-                    // coba 2 child
-                    int childCount = 2;
-                    float totalWidth = childCount * BOX_WIDTH + (childCount - 1) * INLINE_GAP;
-                    float childStartX = rootPos.centerX() - (totalWidth / 2);
-                    float childY = rootPos.bottom() - CONNECTOR_LENGTH - BOX_HEIGHT - VERTICAL_LINE_LENGTH;
-
-                    List<NodePosition> childPositions = new ArrayList<>();
-
-                    for (int i = 0; i < childCount; i++) {
-                        float x = childStartX + i * (BOX_WIDTH + INLINE_GAP);
-
-                        NodePosition pos = new NodePosition(
-                                x,
-                                childY,
-                                BOX_WIDTH,
-                                BOX_HEIGHT
-                        );
-
-                        childPositions.add(pos);
-
-                        drawKotakPokin(content, pos, root.childs().get(i));
-                    }
-
-                    // first child
-                    NodePosition firstChildPos = childPositions.getFirst();
-                    // last child
-                    NodePosition lastChildPos = childPositions.getLast();
-
-                    float horizontalY = rootPos.bottom() - CONNECTOR_LENGTH;
-
-                    ShapeUtils.drawHorizontalLine(content,
-                            firstChildPos.centerX(),
-                            lastChildPos.centerX(),
-                            horizontalY
+                try (PDPageContentStream content =
+                        new PDPageContentStream(document, page)) {
+                    RenderPage renderPage = new RenderPage(
+                            pagePlan.current().jenisPohon(),
+                            pagePlan.current().namaPohon(),
+                            layout
                     );
-
-                    for (NodePosition childPos : childPositions) {
-                        ShapeUtils.drawVerticalLine(
-                                content,
-                                childPos.centerX(),
-                                horizontalY,
-                                VERTICAL_LINE_LENGTH
-                        );
-                    }
+                    pdfRenderer.render(page, content, renderPage);
                 }
             }
 
@@ -134,73 +75,34 @@ public class PokinPemdaPDFGenerator {
         }
     }
 
-    private void drawTitle(
-            PDPageContentStream content,
-            PDPage page,
-            String title
+    private void drawTitlePage(
+            PDDocument document
     ) throws IOException {
 
-        PDFont font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-        float fontSize = 20f;
-        float topMargin = 30f;
+        PDRectangle pageSize = PageOrientation.PORTRAIT.createRectangle(PDRectangle.A4);
 
-        PDRectangle pageSize = page.getMediaBox();
+        PDPage page = new PDPage(pageSize);
+        document.addPage(page);
 
-        float pageWidth = pageSize.getWidth();
-        float pageHeight = pageSize.getHeight();
 
-        float titleWidth = font.getStringWidth(title) / 1000 * fontSize;
-        float x = (pageWidth - titleWidth) / 2;
-        float y = pageHeight - topMargin;
+        try (PDPageContentStream content = new PDPageContentStream(document, page)) {
+            String title = "Pokin Pemda TESTING";
+            PDFont font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+            float fontSize = 20f;
+            float topMargin = 30f;
 
-        content.beginText();
-        content.setFont(font, fontSize);
-        content.newLineAtOffset(x, y);
-        content.showText(title);
-        content.endText();
-    }
+            float pageWidth = pageSize.getWidth();
+            float pageHeight = pageSize.getHeight();
 
-    private void drawKotakPokin(
-            PDPageContentStream content,
-            NodePosition pos,
-            PokinPemda pokin
-    ) throws IOException {
+            float titleWidth = font.getStringWidth(title) / 1000 * fontSize;
+            float x = (pageWidth - titleWidth) / 2;
+            float y = pageHeight - topMargin;
 
-        final float width = 220f;
-        final float height = 70f;
-        final float headerHeight = 20f;
-
-        // Border luar
-        content.addRect(pos.x(), pos.y(), width, height);
-
-        // Garis pembatas
-        content.moveTo(pos.x(), pos.y() + height - headerHeight);
-        content.lineTo(pos.x() + width, pos.y() + height - headerHeight);
-
-        content.stroke();
-
-        // judul pokin
-        TextUtils.drawCenteredText(
-                content,
-                pokin.jenisPohon(),
-                pos.x(),
-                pos.y() + height - headerHeight,
-                width,
-                headerHeight,
-                BOX_HEADER_FONT,
-                10f
-        );
-
-        // nama pokin
-        TextUtils.drawCenteredMultilineText(
-                content,
-                pokin.namaPohon(),
-                pos.x(),
-                pos.y(),
-                width,
-                height - headerHeight,
-                BOX_BODY_FONT,
-                10f
-        );
+            content.beginText();
+            content.setFont(font, fontSize);
+            content.newLineAtOffset(x, y);
+            content.showText(title);
+            content.endText();
+        }
     }
 }

@@ -2,6 +2,8 @@ package cc.kertaskerja.cetakservice.pdf;
 
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -147,5 +149,22 @@ public final class TextUtils {
         }
 
         return lines;
+    }
+
+    public static void drawJudulHalaman(
+            PDPageContentStream content,
+            float x,
+            float y,
+            String judulHalaman
+    ) throws IOException {
+        // default, change later if needed
+        PDFont font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+        float fontSize = 15f;
+
+        content.beginText();
+        content.setFont(font, fontSize);
+        content.newLineAtOffset(x, y);
+        content.showText(judulHalaman);
+        content.endText();
     }
 }
