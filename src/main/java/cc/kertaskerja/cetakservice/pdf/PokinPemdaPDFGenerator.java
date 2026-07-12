@@ -1,7 +1,5 @@
 package cc.kertaskerja.cetakservice.pdf;
 
-import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemda;
-import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemdaCetakResponse;
 import cc.kertaskerja.cetakservice.pdf.pokin.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;

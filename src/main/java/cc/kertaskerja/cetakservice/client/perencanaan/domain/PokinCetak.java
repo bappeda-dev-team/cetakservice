@@ -1,12 +1,8 @@
 package cc.kertaskerja.cetakservice.client.perencanaan.domain;
 
-import cc.kertaskerja.cetakservice.pdf.pokin.Node;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public record PokinPemda(
+public record PokinCetak(
         Integer id,
 
         @JsonProperty("parent_id")

@@ -1,6 +1,6 @@
 package cc.kertaskerja.cetakservice.pokin.domain;
 
-import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemda;
+import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinCetak;
 import cc.kertaskerja.cetakservice.pdf.pokin.Node;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Component
 public class TreeBuilder {
 
-    public List<Node> build(List<PokinPemda> items) {
+    public List<Node> build(List<PokinCetak> items) {
         Map<Integer, Node> nodeMap = items.stream()
                 .map(Node::from)
                 .collect(Collectors.toMap(Node::id, Function.identity()));

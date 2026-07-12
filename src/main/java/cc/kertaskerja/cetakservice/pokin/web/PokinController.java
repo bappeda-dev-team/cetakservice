@@ -29,13 +29,15 @@ public class PokinController {
         return WebResponse.success(url);
     }
 
-    @GetMapping("/opd")
+    @PostMapping("/opd")
     @Operation(summary = "Cetak pokin opd", description = "Cetak pokin opd by kode opd and tahun")
     public WebResponse<String> cetakPokinOpd(
-            @Parameter(description = "kode opd", example = "1.02.03") String kodeOpd,
-            @Parameter(description = "tahun", example = "2026") String tahun) {
+            @RequestBody
+            @Valid
+            CetakPokinOpdRequest request) {
 
-        return WebResponse.success("CETAK POKIN OPD");
+        String url = pokinService.cetakPokinOpd(request.kodeOpd(), request.tahun());
+        return WebResponse.success(url);
 
     }
 

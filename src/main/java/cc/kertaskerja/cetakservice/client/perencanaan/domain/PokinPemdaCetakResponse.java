@@ -7,6 +7,6 @@ public record PokinPemdaCetakResponse(
         String nama,
         String version,
         OffsetDateTime time,
-        List<PokinPemda> item
+        List<PokinCetak> item
 ) {
 }

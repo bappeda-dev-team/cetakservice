@@ -32,4 +32,19 @@ public class DevController {
                 .body(resource);
     }
 
+    @GetMapping(
+            value = "/latest-pokin-opd",
+            produces = MediaType.APPLICATION_PDF_VALUE
+    )
+    public ResponseEntity<Resource> latestPokinOpd() {
+
+        Path path = Path.of("storage/pdf/latest-pokin-opd.pdf");
+
+        Resource resource = new FileSystemResource(path);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(resource);
+    }
+
 }
