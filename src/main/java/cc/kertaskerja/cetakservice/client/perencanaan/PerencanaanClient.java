@@ -36,7 +36,7 @@ public class PerencanaanClient {
     public PokinOpdCetakResponse getPokinOpdCetak(String kodeOpd, Integer tahun) {
         PerencanaanWebResponse<PokinOpdCetakResponse> response = restClient
                 .get()
-                .uri("/pohon_kinerja_opd/findall/{kodeOpd}/{tahun}", kodeOpd, tahun)
+                .uri("/pohon_kinerja_opd/cetak/{kodeOpd}/{tahun}", kodeOpd, tahun)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
 

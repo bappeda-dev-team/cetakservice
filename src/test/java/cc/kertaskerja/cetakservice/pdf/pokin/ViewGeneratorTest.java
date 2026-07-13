@@ -12,41 +12,7 @@ class ViewGeneratorTest {
     @Test
     void should_generate_page_plan_with_correct_ancestors() {
 
-        Node strategic1 = new Node(
-                4,
-                2,
-                2,
-                "Strategic",
-                "Strategic 1",
-                new ArrayList<>());
-
-        Node strategic2 = new Node(
-                5,
-                2,
-                2,
-                "Strategic",
-                "Strategic 2",
-                new ArrayList<>());
-
-        Node subTema = new Node(
-                2,
-                1,
-                1,
-                "Sub Tema",
-                "Sub Tema A",
-                new ArrayList<>(List.of(strategic1, strategic2)));
-
-        Node tema = new Node(
-                1,
-                0,
-                0,
-                "Tema",
-                "Tema",
-                new ArrayList<>(List.of(subTema)));
-
-        ViewGenerator generator = new ViewGenerator();
-
-        List<PagePlan> pages = generator.generate(tema);
+        List<PagePlan> pages = getPagePlans();
 
         assertEquals(4, pages.size());
 
@@ -79,6 +45,48 @@ class ViewGeneratorTest {
                         .map(Node::namaPohon)
                         .toList()
         );
+    }
+
+    private static List<PagePlan> getPagePlans() {
+        Node strategic1 = new Node(
+                4,
+                2,
+                2,
+                JenisPohon.STRATEGIC_PEMDA,
+                "Strategic 1",
+                null,
+                new ArrayList<>());
+
+        Node strategic2 = new Node(
+                5,
+                2,
+                2,
+                JenisPohon.STRATEGIC_PEMDA,
+                "Strategic 2",
+                null,
+                new ArrayList<>());
+
+        Node subTema = new Node(
+                2,
+                1,
+                1,
+                JenisPohon.SUB_TEMATIK,
+                "Sub Tema A",
+                null,
+                new ArrayList<>(List.of(strategic1, strategic2)));
+
+        Node tema = new Node(
+                1,
+                0,
+                0,
+                JenisPohon.TEMATIK,
+                "Tema",
+                null,
+                new ArrayList<>(List.of(subTema)));
+
+        ViewGenerator generator = new ViewGenerator();
+
+        return generator.generate(tema);
     }
 
 }

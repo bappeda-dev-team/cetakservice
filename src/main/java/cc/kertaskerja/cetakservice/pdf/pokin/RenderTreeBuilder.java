@@ -42,6 +42,7 @@ public class RenderTreeBuilder {
                 node.levelPohon(),
                 node.jenisPohon(),
                 node.namaPohon(),
+                null,
                 new ArrayList<>()
         );
     }

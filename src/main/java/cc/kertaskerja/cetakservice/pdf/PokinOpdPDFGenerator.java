@@ -15,23 +15,20 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class PokinPemdaPDFGenerator {
+public class PokinOpdPDFGenerator {
     private final LayoutEngine layoutEngine;
     private final PdfRenderer pdfRenderer;
     private final ViewGenerator viewGenerator;
     private final RenderTreeBuilder renderTreeBuilder;
 
-    public  PokinPemdaPDFGenerator(
-            LayoutEngine layoutEngine,
-            PdfRenderer pdfRenderer,
-            ViewGenerator viewGenerator, RenderTreeBuilder renderTreeBuilder) {
+    public PokinOpdPDFGenerator(LayoutEngine layoutEngine, PdfRenderer pdfRenderer, ViewGenerator viewGenerator, RenderTreeBuilder renderTreeBuilder) {
         this.layoutEngine = layoutEngine;
         this.pdfRenderer = pdfRenderer;
         this.viewGenerator = viewGenerator;
         this.renderTreeBuilder = renderTreeBuilder;
     }
 
-    public byte[] generatePDF(List<Node> roots) {
+    public byte[] generatePDF(Node root) {
 
         try (
                 // berawal dari document
@@ -40,9 +37,7 @@ public class PokinPemdaPDFGenerator {
         ) {
 
             // tulis halaman judul di method ini
-            drawTitlePage(document, "POHON KINERJA TEMATIK");
-
-            Node root = roots.getFirst();
+            drawTitlePage(document, "POHON KINERJA OPD");
 
             List<PagePlan> plans = viewGenerator.generate(root);
 
@@ -54,7 +49,7 @@ public class PokinPemdaPDFGenerator {
                 LayoutResult layout = layoutEngine.layout(renderTree);
 
                 try (PDPageContentStream content =
-                        new PDPageContentStream(document, page)) {
+                             new PDPageContentStream(document, page)) {
                     RenderPage renderPage = new RenderPage(
                             pagePlan.current().jenisPohon().getLabel(),
                             pagePlan.current().namaPohon(),
@@ -78,7 +73,7 @@ public class PokinPemdaPDFGenerator {
             String judulBuku
     ) throws IOException {
 
-        PDRectangle pageSize = PageOrientation.PORTRAIT.createRectangle(PDRectangle.A4);
+        PDRectangle pageSize = PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A4);
 
         PDPage page = new PDPage(pageSize);
         document.addPage(page);

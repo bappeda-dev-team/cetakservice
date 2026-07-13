@@ -161,10 +161,12 @@ public final class TextUtils {
         PDFont font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
         float fontSize = 15f;
 
+        String judulBener = judulHalaman.replace("\t", " ");
+
         content.beginText();
         content.setFont(font, fontSize);
         content.newLineAtOffset(x, y);
-        content.showText(judulHalaman);
+        content.showText(judulBener);
         content.endText();
     }
 }

@@ -222,7 +222,7 @@ public class PdfRenderer {
         // judul pokin
         TextUtils.drawCenteredText(
                 content,
-                node.getNode().jenisPohon(),
+                node.getNode().jenisPohon().getLabel(),
                 x,
                 y + BOX_HEIGHT - BOX_HEADER_HEIGHT,
                 BOX_WIDTH,

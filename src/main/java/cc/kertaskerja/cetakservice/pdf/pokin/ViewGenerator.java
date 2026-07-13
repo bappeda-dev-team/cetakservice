@@ -23,9 +23,11 @@ public class ViewGenerator {
         return pagePlans;
     }
 
+    // split page by jenis pohon
     private boolean shouldCreatePage(Node node) {
         return switch (node.jenisPohon()) {
-            case "Strategic Pemda" -> true;
+            case JenisPohon.SUB_TEMATIK -> true;
+            case JenisPohon.STRATEGIC -> true;
             default -> false;
         };
     }

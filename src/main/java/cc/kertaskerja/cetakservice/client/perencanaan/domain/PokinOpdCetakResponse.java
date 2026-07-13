@@ -12,37 +12,3 @@ public record PokinOpdCetakResponse(
         PokinOpd item
 ) {
 }
-record PokinOpd(
-        Integer tahun,
-        @JsonProperty("kode_opd")
-        String kodeOpd,
-        @JsonProperty("nama_opd")
-        String namaOpd,
-        @JsonProperty("tujuan_opds")
-        List<TujuanOpd> tujuanOpds,
-        @JsonProperty("pohon_kinerjas")
-        List<PokinCetak> pohonKinerjas
-) {
-}
-
-record TujuanOpd(
-        Integer id,
-        @JsonProperty("kode_opd")
-        String kodeOpd,
-        String tujuan,
-        List<IndikatorTujuan> indikator
-) {
-
-}
-
-record IndikatorTujuan(
-        String indikator,
-        List<TargetTujuan> targets
-) {
-}
-
-record TargetTujuan(
-        String tahun,
-        String target,
-        String satuan
-) {}

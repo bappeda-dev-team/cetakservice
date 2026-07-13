@@ -4,6 +4,7 @@ import cc.kertaskerja.cetakservice.client.perencanaan.PerencanaanClient;
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinOpdCetakResponse;
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemdaCetakResponse;
 import cc.kertaskerja.cetakservice.common.LocalStorageService;
+import cc.kertaskerja.cetakservice.pdf.PokinOpdPDFGenerator;
 import cc.kertaskerja.cetakservice.pdf.PokinPemdaPDFGenerator;
 import cc.kertaskerja.cetakservice.pdf.pokin.Node;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ public class PokinService {
 
     private final PerencanaanClient perencanaanClient;
     private final PokinPemdaPDFGenerator pokinPemdaPDFGenerator;
+    private final PokinOpdPDFGenerator pokinOpdPDFGenerator;
     private final LocalStorageService localStorageService;
 
     private final TreeBuilder treeBuilder;
@@ -22,11 +24,13 @@ public class PokinService {
     public PokinService(
             PerencanaanClient perencanaanClient,
             PokinPemdaPDFGenerator pokinPemdaPDFGenerator,
+            PokinOpdPDFGenerator pokinOpdPDFGenerator,
             LocalStorageService localStorageService,
             TreeBuilder treeBuilder
             ) {
         this.perencanaanClient = perencanaanClient;
         this.pokinPemdaPDFGenerator = pokinPemdaPDFGenerator;
+        this.pokinOpdPDFGenerator = pokinOpdPDFGenerator;
         this.localStorageService = localStorageService;
         this.treeBuilder = treeBuilder;
     }
@@ -50,11 +54,11 @@ public class PokinService {
         PokinOpdCetakResponse response =
                 perencanaanClient.getPokinOpdCetak(kodeOpd, tahun);
 
-        List<Node> pokinTree = treeBuilder.buildPokinOpd(response.item());
+        Node pokinTree = treeBuilder.buildPokinOpd(response.item());
         byte[] pdf =
                 pokinOpdPDFGenerator.generatePDF(pokinTree);
 
-        localStorageService.save("lastes-pokin-opd.pdf", pdf);
+        localStorageService.save("latest-pokin-opd.pdf", pdf);
 
         return "/dev/latest-pokin-opd";
     }
