@@ -24,25 +24,8 @@ public class LocalPdfStorageService implements PdfStorageService {
 
     @Override
     public Optional<String> findPdf(String key) {
-        Path directory = Path.of("storage", "pdf").resolve(key);
-
-        if (!Files.exists(directory) || !Files.isDirectory(directory)) {
-            return Optional.empty();
-        }
-
-        try (Stream<Path> files = Files.list(directory)) {
-
-            return files
-                    .filter(Files::isRegularFile)
-                    .findFirst()
-                    .map(file -> "/dev/result/%s/%s".formatted(
-                            key,
-                            file.getFileName()
-                    ));
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        // better bikin baru terus untuk dev
+        return Optional.empty();
     }
 
     @Override
