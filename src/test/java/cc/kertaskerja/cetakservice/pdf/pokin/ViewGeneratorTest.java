@@ -59,7 +59,7 @@ class ViewGeneratorTest {
 
         ViewGenerator generator = new ViewGenerator();
 
-        return generator.generate(tema);
+        return generator.generate(tema, ViewMode.PEMDA);
     }
 
 }

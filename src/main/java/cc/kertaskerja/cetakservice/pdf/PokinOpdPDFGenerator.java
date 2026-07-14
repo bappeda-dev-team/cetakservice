@@ -5,9 +5,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -36,25 +33,50 @@ public class PokinOpdPDFGenerator {
                 ByteArrayOutputStream output = new ByteArrayOutputStream()
         ) {
 
+            // start cover page
             // tulis halaman judul di method ini
-            drawTitlePage(document, "POHON KINERJA OPD");
+            // start cover page
+            PDPage pageCover = new PDPage(PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A3));
+            document.addPage(pageCover);
+            // tree for cover
+            Node coverTree = renderTreeBuilder.buildCover(root);
+            LayoutResult layoutCover = layoutEngine.layout(coverTree);
+            RenderCover cover = new RenderCover(
+                    "POHON KINERJA OPD",
+                    layoutCover
+            );
 
-            List<PagePlan> plans = viewGenerator.generate(root);
+            try (PDPageContentStream content =
+                         new PDPageContentStream(document, pageCover)) {
+                pdfRenderer.renderCover(pageCover, content, cover);
+            }
+            // end cover page
+
+            List<PagePlan> plans = viewGenerator.generate(root, ViewMode.OPD);
 
             for (PagePlan pagePlan : plans) {
                 PDPage page = new PDPage(PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A0));
                 document.addPage(page);
 
-                Node renderTree = renderTreeBuilder.build(pagePlan);
-                LayoutResult layout = layoutEngine.layout(renderTree);
+                RenderTree renderTree = renderTreeBuilder.build(pagePlan);
+                LayoutResult layout = layoutEngine.layout(renderTree.root());
+
+                String judulHalaman =
+                        "%s %d - %s".formatted(
+                                renderTree.current().jenisPohon().getLabel(),
+                                pagePlan.sequence(),
+                                renderTree.current().namaPohon()
+                        );
+
+                RenderPage renderPage = new RenderPage(
+                        judulHalaman,
+                        renderTree.current().jenisPohon().getLabel(),
+                        renderTree.current().namaPohon(),
+                        layout
+                );
 
                 try (PDPageContentStream content =
                              new PDPageContentStream(document, page)) {
-                    RenderPage renderPage = new RenderPage(
-                            pagePlan.current().jenisPohon().getLabel(),
-                            pagePlan.current().namaPohon(),
-                            layout
-                    );
                     pdfRenderer.render(page, content, renderPage);
                 }
             }
@@ -65,37 +87,6 @@ public class PokinOpdPDFGenerator {
 
         } catch (IOException e) {
             throw new RuntimeException("Failed generate PDF", e);
-        }
-    }
-
-    private void drawTitlePage(
-            PDDocument document,
-            String judulBuku
-    ) throws IOException {
-
-        PDRectangle pageSize = PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A4);
-
-        PDPage page = new PDPage(pageSize);
-        document.addPage(page);
-
-
-        try (PDPageContentStream content = new PDPageContentStream(document, page)) {
-            PDFont font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-            float fontSize = 20f;
-            float topMargin = 30f;
-
-            float pageWidth = pageSize.getWidth();
-            float pageHeight = pageSize.getHeight();
-
-            float titleWidth = font.getStringWidth(judulBuku) / 1000 * fontSize;
-            float x = (pageWidth - titleWidth) / 2;
-            float y = pageHeight - topMargin;
-
-            content.beginText();
-            content.setFont(font, fontSize);
-            content.newLineAtOffset(x, y);
-            content.showText(judulBuku);
-            content.endText();
         }
     }
 }

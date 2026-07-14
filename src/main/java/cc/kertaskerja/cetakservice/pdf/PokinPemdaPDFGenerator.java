@@ -55,7 +55,7 @@ public class PokinPemdaPDFGenerator {
             }
             // end cover page
 
-            List<PagePlan> plans = viewGenerator.generate(root);
+            List<PagePlan> plans = viewGenerator.generate(root, ViewMode.PEMDA);
 
             for (PagePlan pagePlan : plans) {
                 PDPage page = new PDPage(PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A0));

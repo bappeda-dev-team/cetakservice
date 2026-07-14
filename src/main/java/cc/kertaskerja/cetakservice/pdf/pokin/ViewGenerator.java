@@ -15,29 +15,28 @@ public class ViewGenerator {
     // hal keempat - Tema, Sub Tema(1), Strategic(2), Tact, Operasional
     // ...
 
-    public List<PagePlan> generate(Node root) {
+    public List<PagePlan> generate(Node root, ViewMode mode) {
         List<PagePlan> pagePlans = new ArrayList<>();
 
-        generatePagePlan(root, new ArrayList<>(), pagePlans, 1);
+        generatePagePlan(mode, root, new ArrayList<>(), pagePlans, 1);
 
         return pagePlans;
     }
 
     // split page by jenis pohon
-    private boolean shouldCreatePage(Node node) {
-        return switch (node.jenisPohon()) {
-            case JenisPohon.SUB_TEMATIK -> true;
-            case JenisPohon.STRATEGIC_PEMDA -> node.isOpd();
-            case JenisPohon.STRATEGIC -> node.isOpd();
-            default -> false;
+    private boolean shouldCreatePage(Node node, ViewMode mode) {
+        return switch (mode) {
+            case PEMDA -> node.jenisPohon() == JenisPohon.SUB_TEMATIK;
+            case OPD -> node.jenisPohon() == JenisPohon.STRATEGIC_PEMDA || node.jenisPohon() == JenisPohon.STRATEGIC;
         };
     }
 
-    private void generatePagePlan(Node current,
+    private void generatePagePlan(ViewMode mode,
+                                  Node current,
                                   List<Node> ancestors,
                                   List<PagePlan> pagePlans,
                                   Integer sequence) {
-        if (shouldCreatePage(current)) {
+        if (shouldCreatePage(current, mode)) {
             pagePlans.add(new PagePlan(sequence, List.copyOf(ancestors), current));
         }
 
@@ -50,11 +49,12 @@ public class ViewGenerator {
 
             Integer nextSequence = sequence;
 
-            if (shouldCreatePage(child)) {
+            if (shouldCreatePage(child, mode)) {
                 nextSequence = childSequence++;
             }
 
             generatePagePlan(
+                    mode,
                     child,
                     nextAncestors,
                     pagePlans,
