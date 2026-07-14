@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PokinService {
@@ -46,10 +47,10 @@ public class PokinService {
         String version = response.version();
         String key = "pokin/pemda/%d/%s".formatted(pokinId, version);
         // cek ke upload service apakah key tersebut sudah ada
-        UploadSuccessResponse existing = uploadClient.findFile(key);
+        Optional<UploadSuccessResponse> existing = uploadClient.findFile(key);
 
-        if (existing != null) {
-            return existing.url();
+        if (existing.isPresent()) {
+            return existing.get().url();
         }
 
         List<Node> pokinTree = treeBuilder.build(response.item());
@@ -75,10 +76,10 @@ public class PokinService {
         String version = response.version();
         String key = "pokin/opd/%s/%d/%s".formatted(kodeOpd, tahun, version);
         // cek ke upload service apakah key tersebut sudah ada
-        UploadSuccessResponse existing = uploadClient.findFile(key);
+        Optional<UploadSuccessResponse> existing = uploadClient.findFile(key);
 
-        if (existing != null) {
-            return existing.url();
+        if (existing.isPresent()) {
+            return existing.get().url();
         }
 
         Node pokinTree = treeBuilder.buildPokinOpd(response.item());

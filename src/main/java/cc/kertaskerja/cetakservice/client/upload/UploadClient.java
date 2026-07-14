@@ -8,6 +8,9 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
+
+import java.util.Optional;
 
 @Component
 public class UploadClient {
@@ -19,15 +22,35 @@ public class UploadClient {
         this.restClient = restClient;
     }
 
-    public UploadSuccessResponse findFile(String key) {
-       return restClient
-               .get()
-               .uri(uriBuilder -> uriBuilder
-                       .path("/files")
-                       .queryParam("key", key)
-                       .build())
-               .retrieve()
-               .body(UploadSuccessResponse.class);
+    public Optional<UploadSuccessResponse> findFile(String key) {
+        return restClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/files")
+                        .queryParam("key", key)
+                        .build())
+                .exchange((request, response) -> {
+
+                    if (response.getStatusCode().value() == 404) {
+                        return Optional.empty();
+                    }
+
+                    if (response.getStatusCode().isError()) {
+                        throw new RestClientResponseException(
+                                "Upload service returned %s"
+                                        .formatted(response.getStatusCode()),
+                                response.getStatusCode().value(),
+                                response.getStatusText(),
+                                response.getHeaders(),
+                                response.getBody().readAllBytes(),
+                                null
+                        );
+                    }
+
+                    return Optional.ofNullable(
+                            response.bodyTo(UploadSuccessResponse.class)
+                    );
+                });
     }
 
     public UploadSuccessResponse uploadFile(UploadRequest request) {
