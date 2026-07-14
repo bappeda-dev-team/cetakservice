@@ -3,11 +3,14 @@ package cc.kertaskerja.cetakservice.pokin.domain;
 import cc.kertaskerja.cetakservice.client.perencanaan.PerencanaanClient;
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinOpdCetakResponse;
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemdaCetakResponse;
+import cc.kertaskerja.cetakservice.client.upload.UploadClient;
+import cc.kertaskerja.cetakservice.client.upload.domain.UploadRequest;
 import cc.kertaskerja.cetakservice.common.LocalStorageService;
 import cc.kertaskerja.cetakservice.pdf.PokinOpdPDFGenerator;
 import cc.kertaskerja.cetakservice.pdf.PokinPemdaPDFGenerator;
 import cc.kertaskerja.cetakservice.pdf.pokin.Node;
 import org.springframework.stereotype.Service;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.util.List;
 
@@ -15,6 +18,7 @@ import java.util.List;
 public class PokinService {
 
     private final PerencanaanClient perencanaanClient;
+    private final UploadClient uploadClient;
     private final PokinPemdaPDFGenerator pokinPemdaPDFGenerator;
     private final PokinOpdPDFGenerator pokinOpdPDFGenerator;
     private final LocalStorageService localStorageService;
@@ -23,12 +27,14 @@ public class PokinService {
 
     public PokinService(
             PerencanaanClient perencanaanClient,
+            UploadClient uploadClient,
             PokinPemdaPDFGenerator pokinPemdaPDFGenerator,
             PokinOpdPDFGenerator pokinOpdPDFGenerator,
             LocalStorageService localStorageService,
             TreeBuilder treeBuilder
             ) {
         this.perencanaanClient = perencanaanClient;
+        this.uploadClient = uploadClient;
         this.pokinPemdaPDFGenerator = pokinPemdaPDFGenerator;
         this.pokinOpdPDFGenerator = pokinOpdPDFGenerator;
         this.localStorageService = localStorageService;
@@ -47,7 +53,12 @@ public class PokinService {
 
         localStorageService.save("latest-pokin.pdf", pdf);
 
-        return "/dev/latest-pokin";
+        return uploadClient.uploadFile(UploadRequest.pokinUpload(
+                new ByteArrayResource(pdf),
+                "pokin-pemda-%d.pdf".formatted(pokinId),
+                "pokin-pemda",
+                "pokin/pemda/%d".formatted(pokinId)
+        )).url();
     }
 
     public String cetakPokinOpd(String kodeOpd, Integer tahun) {
@@ -60,6 +71,11 @@ public class PokinService {
 
         localStorageService.save("latest-pokin-opd.pdf", pdf);
 
-        return "/dev/latest-pokin-opd";
+        return uploadClient.uploadFile(UploadRequest.pokinUpload(
+                new ByteArrayResource(pdf),
+                "pokin-opd-%s-%d.pdf".formatted(kodeOpd, tahun),
+                "pokin-opd",
+                "pokin/opd/%s/%d".formatted(kodeOpd, tahun)
+        )).url();
     }
 }

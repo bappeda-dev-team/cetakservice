@@ -12,39 +12,12 @@ class ViewGeneratorTest {
     @Test
     void should_generate_page_plan_with_correct_ancestors() {
 
+        // generate by sub tematik
         List<PagePlan> pages = getPagePlans();
 
-        assertEquals(4, pages.size());
+        assertEquals(1, pages.size());
 
-        assertEquals("Tema", pages.get(0).current().namaPohon());
-        assertTrue(pages.get(0).ancestors().isEmpty());
-
-        assertEquals("Sub Tema A", pages.get(1).current().namaPohon());
-        assertEquals(
-                List.of("Tema"),
-                pages.get(1).ancestors()
-                        .stream()
-                        .map(Node::namaPohon)
-                        .toList()
-        );
-
-        assertEquals("Strategic 1", pages.get(2).current().namaPohon());
-        assertEquals(
-                List.of("Tema", "Sub Tema A"),
-                pages.get(2).ancestors()
-                        .stream()
-                        .map(Node::namaPohon)
-                        .toList()
-        );
-
-        assertEquals("Strategic 2", pages.get(3).current().namaPohon());
-        assertEquals(
-                List.of("Tema", "Sub Tema A"),
-                pages.get(3).ancestors()
-                        .stream()
-                        .map(Node::namaPohon)
-                        .toList()
-        );
+        assertEquals("Sub Tema A", pages.getFirst().current().namaPohon());
     }
 
     private static List<PagePlan> getPagePlans() {

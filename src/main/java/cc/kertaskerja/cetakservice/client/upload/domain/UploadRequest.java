@@ -13,12 +13,13 @@ public record UploadRequest(
         String key
 ) {
     public static UploadRequest pokinUpload(
+            Resource file,
             String fileName,
             String category,
             String key
     ) {
         return new UploadRequest(
-                null,
+                file,
                 fileName,
                 category,
                 "service",

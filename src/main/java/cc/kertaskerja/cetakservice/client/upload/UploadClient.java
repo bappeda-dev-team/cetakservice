@@ -5,9 +5,11 @@ import cc.kertaskerja.cetakservice.client.upload.domain.UploadSuccessResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
+@Component
 public class UploadClient {
     private final RestClient restClient;
 
