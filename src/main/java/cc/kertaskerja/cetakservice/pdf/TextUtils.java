@@ -176,7 +176,7 @@ public final class TextUtils {
     ) throws IOException {
         // default, change later if needed
         PDFont font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-        float fontSize = 15f;
+        float fontSize = 18f;
 
         String judulBener = judulHalaman.replace("\t", " ");
 

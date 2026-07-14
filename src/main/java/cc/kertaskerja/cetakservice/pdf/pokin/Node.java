@@ -20,6 +20,10 @@ public record Node(
         children = children == null ? new ArrayList<>() : children;
     }
 
+    public boolean isOpd() {
+        return nodeMetadata() != null;
+    }
+
     public static Node from(PokinCetak item) {
         JenisPohon jenisPohon = jenisPohonFinder(item.jenisPohon());
 

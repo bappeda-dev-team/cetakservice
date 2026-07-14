@@ -18,7 +18,7 @@ public class ViewGenerator {
     public List<PagePlan> generate(Node root) {
         List<PagePlan> pagePlans = new ArrayList<>();
 
-        generatePagePlan(root, new ArrayList<>(), pagePlans);
+        generatePagePlan(root, new ArrayList<>(), pagePlans, 1);
 
         return pagePlans;
     }
@@ -27,23 +27,39 @@ public class ViewGenerator {
     private boolean shouldCreatePage(Node node) {
         return switch (node.jenisPohon()) {
             case JenisPohon.SUB_TEMATIK -> true;
-            case JenisPohon.STRATEGIC -> true;
+            case JenisPohon.STRATEGIC_PEMDA -> node.isOpd();
+            case JenisPohon.STRATEGIC -> node.isOpd();
             default -> false;
         };
     }
 
     private void generatePagePlan(Node current,
                                   List<Node> ancestors,
-                                  List<PagePlan> pagePlans) {
+                                  List<PagePlan> pagePlans,
+                                  Integer sequence) {
         if (shouldCreatePage(current)) {
-            pagePlans.add(new PagePlan(List.copyOf(ancestors), current));
+            pagePlans.add(new PagePlan(sequence, List.copyOf(ancestors), current));
         }
 
         List<Node> nextAncestors = new ArrayList<>(ancestors);
         nextAncestors.add(current);
 
+        int childSequence = 1;
+
         for (Node child : current.children()) {
-            generatePagePlan(child, nextAncestors, pagePlans);
+
+            Integer nextSequence = sequence;
+
+            if (shouldCreatePage(child)) {
+                nextSequence = childSequence++;
+            }
+
+            generatePagePlan(
+                    child,
+                    nextAncestors,
+                    pagePlans,
+                    nextSequence
+            );
         }
     }
 }

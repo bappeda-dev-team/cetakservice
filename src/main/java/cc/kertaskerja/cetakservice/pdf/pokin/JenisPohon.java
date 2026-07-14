@@ -1,6 +1,5 @@
 package cc.kertaskerja.cetakservice.pdf.pokin;
 
-import jakarta.annotation.security.PermitAll;
 
 import java.awt.Color;
 

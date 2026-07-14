@@ -4,6 +4,10 @@ import cc.kertaskerja.cetakservice.pdf.ShapeUtils;
 import cc.kertaskerja.cetakservice.pdf.TextUtils;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -40,6 +44,65 @@ public class PdfRenderer {
         drawContentBorder(content, contentArea);
 
         drawTree(content, page, renderPage.layout().root(), contentOffsetX, contentStartY - 5f);
+    }
+
+    public void renderCover(
+            PDPage page,
+            PDPageContentStream content,
+            RenderCover renderCover
+    ) throws IOException {
+
+        // judul cover
+        title(page, content, renderCover.title());
+
+        // jarak antara title dengan pohon
+        float contentStartY =
+                PAGE_MARGIN_TOP +
+                        PAGE_HEADER_HEIGHT +
+                        TITLE_PAGE_PADDING +
+                        PAPER_MARGIN_TOP;
+
+        float visualWidth = renderCover.layout().bound().width() + BOX_WIDTH;
+        float availableWidth = page.getMediaBox().getWidth()
+                - PAGE_MARGIN_LEFT
+                - PAGE_MARGIN_RIGHT;
+        // biar pohon center
+        float contentOffsetX = PAGE_MARGIN_LEFT + (availableWidth - visualWidth) / 2f
+                - renderCover.layout().bound().minX();
+
+        ContentArea contentArea = getContentArea(page);
+
+        drawContentBorder(content, contentArea);
+        drawTree(content, page, renderCover.layout().root(), contentOffsetX, contentStartY - 5f);
+    }
+
+    private void title(
+            PDPage page,
+            PDPageContentStream content,
+            String title
+    ) throws IOException {
+
+        PDRectangle mediaBox = page.getMediaBox();
+
+        PDFont font =
+                new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+
+        float fontSize = 24f;
+
+        /*
+         kalau mau center
+         float titleWidth = font.getStringWidth(title) / 1000f * fontSize;
+         float x = (mediaBox.getWidth() - titleWidth) / 2f;
+        */
+        float x = 20f;
+
+        float y = mediaBox.getHeight() - PAPER_MARGIN_TOP;
+
+        content.beginText();
+        content.setFont(font, fontSize);
+        content.newLineAtOffset(x, y);
+        content.showText(title);
+        content.endText();
     }
 
     private ContentArea getContentArea(PDPage page) {
@@ -79,7 +142,7 @@ public class PdfRenderer {
     ) throws IOException {
         float x = 20f;
         float y = page.getMediaBox().getHeight() - PAPER_MARGIN_TOP;
-        String titleText = renderPage.title() + " - " + renderPage.subTitle();
+        String titleText = renderPage.judulHalaman();
         TextUtils.drawJudulHalaman(content, x, y, titleText);
     }
 
@@ -248,7 +311,7 @@ public class PdfRenderer {
 
     private String headerTitle(LayoutNode node) {
         String label = node.getNode().jenisPohon().getLabel();
-        Integer id = node.getNode().id();
+        Integer id = node.getNode().nodeMetadata().nomor();
         // id root OPD di-set -1 (bukan id nyata), jadi jangan tampilkan
         if (id == null || id < 0) {
             return label;
