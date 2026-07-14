@@ -219,17 +219,41 @@ public class PdfRenderer {
             float y,
             LayoutNode node
     ) throws IOException {
-        // judul pokin
+
+        float headerY = y + BOX_HEIGHT - BOX_HEADER_HEIGHT;
+
+        // background header berwarna sesuai level
+        ShapeUtils.drawFilledRect(
+                content,
+                x,
+                headerY,
+                BOX_WIDTH,
+                BOX_HEADER_HEIGHT,
+                node.getNode().jenisPohon().getHeaderColor()
+        );
+
+        // judul pokin: "LABEL id" (mengikuti tampilan web, mis. "Startegic 665")
         TextUtils.drawCenteredText(
                 content,
-                node.getNode().jenisPohon().getLabel(),
+                headerTitle(node),
                 x,
-                y + BOX_HEIGHT - BOX_HEADER_HEIGHT,
+                headerY,
                 BOX_WIDTH,
                 BOX_HEADER_HEIGHT,
                 BOX_HEADER_FONT,
-                BOX_HEADER_FONT_SIZE
+                BOX_HEADER_FONT_SIZE,
+                java.awt.Color.WHITE
         );
+    }
+
+    private String headerTitle(LayoutNode node) {
+        String label = node.getNode().jenisPohon().getLabel();
+        Integer id = node.getNode().id();
+        // id root OPD di-set -1 (bukan id nyata), jadi jangan tampilkan
+        if (id == null || id < 0) {
+            return label;
+        }
+        return label + " " + id;
     }
 
     private void drawBorder(
