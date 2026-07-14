@@ -4,6 +4,8 @@ import cc.kertaskerja.cetakservice.common.LocalStorageService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Profile("dev")
 public class LocalPdfStorageService implements PdfStorageService {
@@ -15,8 +17,20 @@ public class LocalPdfStorageService implements PdfStorageService {
     }
 
     @Override
-    public String storePdf(String fileName, byte[] pdf) {
-        localStorageService.save("latest-pokin.pdf", pdf);
-        return "";
+    public Optional<String> findPdf(String key) {
+        // better bikin baru terus untuk dev
+        return Optional.empty();
+    }
+
+    @Override
+    public String storePdf(
+            byte[] pdf,
+            String fileName,
+            String category,
+            String key
+    ) {
+        localStorageService.save(key, fileName, pdf);
+
+        return "/dev/result/%s/%s".formatted(key, fileName);
     }
 }

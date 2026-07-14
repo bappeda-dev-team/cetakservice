@@ -15,35 +15,51 @@ public class ViewGenerator {
     // hal keempat - Tema, Sub Tema(1), Strategic(2), Tact, Operasional
     // ...
 
-    public List<PagePlan> generate(Node root) {
+    public List<PagePlan> generate(Node root, ViewMode mode) {
         List<PagePlan> pagePlans = new ArrayList<>();
 
-        generatePagePlan(root, new ArrayList<>(), pagePlans);
+        generatePagePlan(mode, root, new ArrayList<>(), pagePlans, 1);
 
         return pagePlans;
     }
 
     // split page by jenis pohon
-    private boolean shouldCreatePage(Node node) {
-        return switch (node.jenisPohon()) {
-            case JenisPohon.SUB_TEMATIK -> true;
-            case JenisPohon.STRATEGIC -> true;
-            default -> false;
+    private boolean shouldCreatePage(Node node, ViewMode mode) {
+        return switch (mode) {
+            case PEMDA -> node.jenisPohon() == JenisPohon.SUB_TEMATIK;
+            case OPD -> node.jenisPohon() == JenisPohon.STRATEGIC_PEMDA || node.jenisPohon() == JenisPohon.STRATEGIC;
         };
     }
 
-    private void generatePagePlan(Node current,
+    private void generatePagePlan(ViewMode mode,
+                                  Node current,
                                   List<Node> ancestors,
-                                  List<PagePlan> pagePlans) {
-        if (shouldCreatePage(current)) {
-            pagePlans.add(new PagePlan(List.copyOf(ancestors), current));
+                                  List<PagePlan> pagePlans,
+                                  Integer sequence) {
+        if (shouldCreatePage(current, mode)) {
+            pagePlans.add(new PagePlan(sequence, List.copyOf(ancestors), current));
         }
 
         List<Node> nextAncestors = new ArrayList<>(ancestors);
         nextAncestors.add(current);
 
+        int childSequence = 1;
+
         for (Node child : current.children()) {
-            generatePagePlan(child, nextAncestors, pagePlans);
+
+            Integer nextSequence = sequence;
+
+            if (shouldCreatePage(child, mode)) {
+                nextSequence = childSequence++;
+            }
+
+            generatePagePlan(
+                    mode,
+                    child,
+                    nextAncestors,
+                    pagePlans,
+                    nextSequence
+            );
         }
     }
 }

@@ -7,53 +7,86 @@ import java.util.ArrayList;
 @Component
 public class RenderTreeBuilder {
 
-    public Node build(PagePlan pagePlan) {
+    public RenderTree build(PagePlan pagePlan) {
+
+        Node current;
 
         if (pagePlan.ancestors().isEmpty()) {
-            return cloneSubTree(pagePlan.current());
+            current = cloneSubTree(pagePlan.current());
+
+            return new RenderTree(current, current);
         }
 
-        Node root =
-                cloneNode(pagePlan.ancestors().getFirst());
+            Node root = cloneNode(pagePlan.ancestors().getFirst());
 
-        Node cursor = root;
+            Node cursor = root;
 
-        for (int i = 1; i < pagePlan.ancestors().size(); i++) {
+            for (int i = 1; i < pagePlan.ancestors().size(); i++) {
 
-            Node copy =
-                    cloneNode(pagePlan.ancestors().get(i));
+                Node copy = cloneNode(pagePlan.ancestors().get(i));
 
-            cursor.children().add(copy);
+                cursor.children().add(copy);
 
-            cursor = copy;
+                cursor = copy;
+            }
+
+            current = cloneSubTree(pagePlan.current(), pagePlan.sequence());
+
+            cursor.children().add(current);
+
+        return new RenderTree(root, current);
+    }
+
+    public Node buildCover(Node root) {
+
+        Node copy = cloneNode(root);
+
+        int nomor = 1;
+
+        for (Node child : root.children()) {
+
+            copy.children().add(
+                    cloneNode(child, nomor++)
+            );
         }
 
-        cursor.children().add(
-                cloneSubTree(pagePlan.current())
-        );
-
-        return root;
+        return copy;
     }
 
     private Node cloneNode(Node node) {
+        return cloneNode(node, null);
+    }
+
+    private Node cloneNode(Node node, Integer nomor) {
+
+        NodeMetadata metadata = nomor == null
+                ? node.nodeMetadata()
+                : node.nodeMetadata().withNomor(nomor);
+
         return new Node(
                 node.id(),
                 node.parentId(),
                 node.levelPohon(),
                 node.jenisPohon(),
                 node.namaPohon(),
-                null,
+                metadata,
                 new ArrayList<>()
         );
     }
 
     private Node cloneSubTree(Node node) {
+        return cloneSubTree(node, null);
+    }
 
-        Node copy = cloneNode(node);
+    private Node cloneSubTree(Node node, Integer nomor) {
+
+        Node copy = cloneNode(node, nomor);
+
+        int childNumber = 1;
 
         for (Node child : node.children()) {
             copy.children().add(
-                    cloneSubTree(child)
+                    cloneSubTree(child, childNumber++)
             );
         }
 
