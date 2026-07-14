@@ -10,14 +10,17 @@ import java.nio.file.Path;
 public class LocalStorageService {
     private static final Path ROOT = Path.of("storage", "pdf");
 
-    public void save(String fileName, byte[] content) {
+    public void save(String key, String fileName, byte[] content) {
 
         try {
-            Files.createDirectories(ROOT);
+            Path directory = ROOT.resolve(key);
 
-            Path file = ROOT.resolve(fileName);
+            Files.createDirectories(directory);
 
-            Files.write(file, content);
+            Files.write(
+                    directory.resolve(fileName),
+                    content
+            );
 
         } catch (IOException e) {
             throw new RuntimeException(e);
