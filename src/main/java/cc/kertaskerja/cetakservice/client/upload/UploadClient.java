@@ -19,6 +19,17 @@ public class UploadClient {
         this.restClient = restClient;
     }
 
+    public UploadSuccessResponse findFile(String key) {
+       return restClient
+               .get()
+               .uri(uriBuilder -> uriBuilder
+                       .path("/files")
+                       .queryParam("key", key)
+                       .build())
+               .retrieve()
+               .body(UploadSuccessResponse.class);
+    }
+
     public UploadSuccessResponse uploadFile(UploadRequest request) {
         MultipartBodyBuilder body = new MultipartBodyBuilder();
         body.part("file", request.file())

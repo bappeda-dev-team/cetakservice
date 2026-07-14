@@ -5,6 +5,7 @@ import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinOpdCetakRespon
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinPemdaCetakResponse;
 import cc.kertaskerja.cetakservice.client.upload.UploadClient;
 import cc.kertaskerja.cetakservice.client.upload.domain.UploadRequest;
+import cc.kertaskerja.cetakservice.client.upload.domain.UploadSuccessResponse;
 import cc.kertaskerja.cetakservice.pdf.PokinOpdPDFGenerator;
 import cc.kertaskerja.cetakservice.pdf.PokinPemdaPDFGenerator;
 import cc.kertaskerja.cetakservice.pdf.pokin.Node;
@@ -43,6 +44,13 @@ public class PokinService {
                 perencanaanClient.getPokinPemdaCetak(pokinId);
 
         String version = response.version();
+        String key = "pokin/pemda/%d/%s".formatted(pokinId, version);
+        // cek ke upload service apakah key tersebut sudah ada
+        UploadSuccessResponse existing = uploadClient.findFile(key);
+
+        if (existing != null) {
+            return existing.url();
+        }
 
         List<Node> pokinTree = treeBuilder.build(response.item());
 
@@ -56,7 +64,7 @@ public class PokinService {
                 new ByteArrayResource(pdf),
                 "pokin-pemda-%d-%s.pdf".formatted(pokinId, version),
                 "pokin-pemda",
-                "pokin/pemda/%d/%s".formatted(pokinId, version)
+                key
         )).url();
     }
 
@@ -65,6 +73,13 @@ public class PokinService {
                 perencanaanClient.getPokinOpdCetak(kodeOpd, tahun);
 
         String version = response.version();
+        String key = "pokin/opd/%s/%d/%s".formatted(kodeOpd, tahun, version);
+        // cek ke upload service apakah key tersebut sudah ada
+        UploadSuccessResponse existing = uploadClient.findFile(key);
+
+        if (existing != null) {
+            return existing.url();
+        }
 
         Node pokinTree = treeBuilder.buildPokinOpd(response.item());
         byte[] pdf =
@@ -77,7 +92,7 @@ public class PokinService {
                 new ByteArrayResource(pdf),
                 "pokin-opd-%s-%d-%s.pdf".formatted(kodeOpd, tahun, version),
                 "pokin-opd",
-                "pokin/opd/%s/%d/%s".formatted(kodeOpd, tahun, version)
+                key
         )).url();
     }
 }

@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ### DEV LOCAL STORAGE ###
-storage
+/storage/
 ## DEV RESOURCE ##
 /src/main/resources/application-dev.yaml
 
