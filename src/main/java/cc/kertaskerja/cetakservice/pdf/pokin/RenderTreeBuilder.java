@@ -59,15 +59,17 @@ public class RenderTreeBuilder {
 
     private Node cloneNode(Node node, Integer nomor) {
 
+        NodeMetadata metadata = nomor == null
+                ? node.nodeMetadata()
+                : node.nodeMetadata().withNomor(nomor);
+
         return new Node(
                 node.id(),
                 node.parentId(),
                 node.levelPohon(),
                 node.jenisPohon(),
                 node.namaPohon(),
-                nomor == null
-                        ? NodeMetadata.empty()
-                        : NodeMetadata.of(nomor),
+                metadata,
                 new ArrayList<>()
         );
     }

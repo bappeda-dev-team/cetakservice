@@ -12,7 +12,7 @@ public enum JenisPohon {
     TACTICAL_PEMDA("Tactical Pemda", Palette.BIRU, Palette.NETRAL),
     OPERATIONAL_PEMDA("Operational Pemda", Palette.HIJAU, Palette.NETRAL),
     // OPD
-    OPD("OPD", Palette.NETRAL, Palette.BLACK),
+    OPD("Tujuan OPD", Palette.NETRAL, Palette.BLACK),
     TUJUAN("Tujuan", Palette.NETRAL, Palette.BLACK),
     STRATEGIC("Startegic", Palette.MERAH, Palette.NETRAL),
     TACTICAL("Tactical", Palette.BIRU, Palette.NETRAL),

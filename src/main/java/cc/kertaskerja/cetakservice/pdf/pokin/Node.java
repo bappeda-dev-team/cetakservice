@@ -29,7 +29,7 @@ public record Node(
                 item.levelPohon(),
                 jenisPohon,
                 item.namaPohon(),
-                null,
+                NodeMetadata.empty(),
                 new ArrayList<>()
         );
     }

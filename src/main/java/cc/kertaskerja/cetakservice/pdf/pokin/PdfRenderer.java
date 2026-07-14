@@ -312,8 +312,9 @@ public class PdfRenderer {
     private String headerTitle(LayoutNode node) {
         String label = node.getNode().jenisPohon().getLabel();
         Integer id = node.getNode().nodeMetadata().nomor();
+        Integer level = node.getNode().levelPohon();
         // id root OPD di-set -1 (bukan id nyata), jadi jangan tampilkan
-        if (id == null || id < 0) {
+        if (id == null || id < 0 || level == 0) {
             return label;
         }
         return label + " " + id;
@@ -335,10 +336,66 @@ public class PdfRenderer {
             float y,
             LayoutNode node
     ) throws IOException {
+
+        if (hasTujuanOpd(node)) {
+            drawTujuanOpd(content, x, y, node.getNode().nodeMetadata().tujuanOpds());
+            return;
+        }
+
+        drawNamaPokin(content, x, y, node.getNode().namaPohon());
+    }
+
+    private boolean hasTujuanOpd(LayoutNode node) {
+        return node.getNode().nodeMetadata() != null &&
+                node.getNode().nodeMetadata().tujuanOpds() != null &&
+                !node.getNode().nodeMetadata().tujuanOpds().isEmpty();
+    }
+
+    private void drawTujuanOpd(
+            PDPageContentStream content,
+            float x,
+            float y,
+            List<TujuanOpd> tujuanOpds
+    ) throws IOException {
+
+        if (tujuanOpds.isEmpty()) {
+            return;
+        }
+
+        float bodyHeight = BOX_HEIGHT - BOX_HEADER_HEIGHT;
+        float itemHeight = bodyHeight / tujuanOpds.size();
+
+        float currentY = y;
+
+        for (int i = 0; i < tujuanOpds.size(); i++) {
+
+            TujuanOpd tujuan = tujuanOpds.get(i);
+
+            TextUtils.drawCenteredMultilineText(
+                    content,
+                    (i + 1) + ". " + tujuan.namaTujuan(),
+                    x,
+                    currentY,
+                    BOX_WIDTH,
+                    itemHeight,
+                    BOX_BODY_FONT,
+                    BOX_FONT_SIZE
+            );
+
+            currentY += itemHeight;
+        }
+    }
+
+    private void drawNamaPokin(
+            PDPageContentStream content,
+            float x,
+            float y,
+            String namaPohon
+    ) throws IOException {
         // nama pokin
         TextUtils.drawCenteredMultilineText(
                 content,
-                node.getNode().namaPohon(),
+                namaPohon,
                 x,
                 y,
                 BOX_WIDTH,

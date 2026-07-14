@@ -24,9 +24,17 @@ public record NodeMetadata(
     public static NodeMetadata empty() {
         return new NodeMetadata(null, null, null);
     }
+
+    public NodeMetadata withNomor(Integer nomor) {
+        return new NodeMetadata(
+                nomor,
+                kodeOpd,
+                tujuanOpds
+        );
+    }
 }
 
 record TujuanOpd(
-        String tujuan
+        String namaTujuan
 ) {
 }
