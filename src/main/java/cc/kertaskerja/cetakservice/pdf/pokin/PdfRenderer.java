@@ -242,7 +242,7 @@ public class PdfRenderer {
                 BOX_HEADER_HEIGHT,
                 BOX_HEADER_FONT,
                 BOX_HEADER_FONT_SIZE,
-                java.awt.Color.WHITE
+                node.getNode().jenisPohon().getTextColor()
         );
     }
 
