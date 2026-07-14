@@ -5,6 +5,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,20 @@ public final class TextUtils {
             PDFont font,
             float fontSize
     ) throws IOException {
+        drawCenteredText(content, text, x, y, width, height, font, fontSize, Color.BLACK);
+    }
+
+    public static void drawCenteredText(
+            PDPageContentStream content,
+            String text,
+            float x,
+            float y,
+            float width,
+            float height,
+            PDFont font,
+            float fontSize,
+            Color textColor
+    ) throws IOException {
 
         float textWidth = font.getStringWidth(text) / 1000 * fontSize;
 
@@ -33,10 +48,12 @@ public final class TextUtils {
         float textY = y + (height - fontSize) / 2 + (fontSize * 0.3f);
 
         content.beginText();
+        content.setNonStrokingColor(textColor);
         content.setFont(font, fontSize);
         content.newLineAtOffset(textX, textY);
         content.showText(text);
         content.endText();
+        content.setNonStrokingColor(Color.BLACK);
     }
 
     public static void drawCenteredMultilineText(
