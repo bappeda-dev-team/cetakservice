@@ -1,5 +1,6 @@
 package cc.kertaskerja.cetakservice.pdf.pokin;
 
+import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinCetak;
 import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinOpd;
 
 import java.util.List;
@@ -7,31 +8,76 @@ import java.util.List;
 public record NodeMetadata(
         Integer nomor,
         String kodeOpd,
-        List<TujuanOpd> tujuanOpds
+        List<TujuanOpd> tujuanOpds,
+        boolean isCrosscutting,
+        List<CrossCuttingPokin> crosscuttingPokins
 ) {
     public static NodeMetadata fromOpd(PokinOpd item) {
         List<TujuanOpd> tujuanOpds = item.tujuanOpds().stream().map(tj ->
-            new TujuanOpd(tj.tujuan())
+                new TujuanOpd(tj.tujuan())
         ).toList();
 
-        return new NodeMetadata(1, item.kodeOpd(), tujuanOpds);
+        return new NodeMetadata(1,
+                item.kodeOpd(),
+                tujuanOpds,
+                false,
+                null);
     }
 
-    public static NodeMetadata of(Integer nomor) {
-        return new NodeMetadata(nomor, null, null);
+    public static NodeMetadata fromPokin(PokinCetak item) {
+        if (item.pokinMetadata() == null) {
+            return empty();
+        }
+
+        if (!item.pokinMetadata().isCrosscutting()) {
+            return empty();
+        }
+
+        List<CrossCuttingPokin> crosscutItems = item.pokinMetadata().crossCuttingPokins()
+                .stream().map(cp ->
+                        new CrossCuttingPokin(
+                                cp.namaPohonPenerima(),
+                                cp.namaOpdPenerima(),
+                                cp.keteranganCrosscutting(),
+                                cp.statusCrosscutting()
+                        ))
+                .toList();
+
+        return new NodeMetadata(
+                null,
+                null,
+                List.of(),
+                true,
+                crosscutItems
+        );
     }
 
     public static NodeMetadata empty() {
-        return new NodeMetadata(null, null, null);
+        return new NodeMetadata(
+                null, null,
+                List.of(),
+                false,
+                List.of()
+        );
     }
 
     public NodeMetadata withNomor(Integer nomor) {
         return new NodeMetadata(
                 nomor,
                 kodeOpd,
-                tujuanOpds
+                tujuanOpds,
+                isCrosscutting,
+                crosscuttingPokins
         );
     }
+}
+
+record CrossCuttingPokin(
+        String namaPohonPenerima,
+        String namaOpdPenerima,
+        String keteranganCrosscutting,
+        String statusCrosscutting
+) {
 }
 
 record TujuanOpd(

@@ -15,6 +15,9 @@ public record PokinCetak(
         String jenisPohon,
 
         @JsonProperty("nama_pohon")
-        String namaPohon
+        String namaPohon,
+
+        @JsonProperty("metadata_pohon")
+        PokinMetadata pokinMetadata
 ) {
 }

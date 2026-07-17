@@ -29,7 +29,7 @@ public record Node(
                 item.levelPohon(),
                 jenisPohon,
                 item.namaPohon(),
-                NodeMetadata.empty(),
+                NodeMetadata.fromPokin(item),
                 new ArrayList<>()
         );
     }
@@ -59,6 +59,10 @@ public record Node(
             case "Tactical" -> JenisPohon.TACTICAL;
             case "Operational" -> JenisPohon.OPERATIONAL;
             case "Operational N" -> JenisPohon.OPERATIONAL_N;
+            case "Strategic Crosscutting" -> JenisPohon.STRATEGIC_CROSSCUTTING;
+            case "Tactical Crosscutting" -> JenisPohon.TACTICAL_CROSSCUTTING;
+            case "Operational Crosscutting" -> JenisPohon.OPERATIONAL_CROSSCUTTING;
+            case "Operational N Crosscutting" -> JenisPohon.OPERATIONAL_N_CROSSCUTTING;
             default -> JenisPohon.POHON_KINERJA;
         };
     }
