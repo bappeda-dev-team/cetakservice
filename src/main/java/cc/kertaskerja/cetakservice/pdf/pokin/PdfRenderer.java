@@ -1,5 +1,6 @@
 package cc.kertaskerja.cetakservice.pdf.pokin;
 
+import cc.kertaskerja.cetakservice.pdf.NodePosition;
 import cc.kertaskerja.cetakservice.pdf.ShapeUtils;
 import cc.kertaskerja.cetakservice.pdf.TextUtils;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -254,6 +255,7 @@ public class PdfRenderer {
         }
     }
 
+    private static final float BODY_TOP_PADDING = 4f;
     private void drawNode(
             PDPageContentStream content,
             PDPage page,
@@ -264,34 +266,89 @@ public class PdfRenderer {
 
         float pageHeight = page.getMediaBox().getHeight();
 
-        float x = node.getX() + contentOffsetX - BOX_WIDTH / 2f;
-        float y = pageHeight - node.getY() - BOX_HEIGHT - contentStartY;
+        Node data = node.getNode();
+
+        NodeSize size = getNodeSize(data);
+
+        float x = node.getX() + contentOffsetX - size.width() / 2f;
+        float y = pageHeight - node.getY() - size.height() - contentStartY;
+
+        drawKotak(
+                content,
+                x, y,
+                size.width(), size.height()
+        );
 
         // jenis pokin
-        drawHeader(content, x, y, node);
+        drawHeader(
+                content,
+                x,
+                y,
+                size.width(),
+                size.height(),
+                node
+        );
 
         // garis pemisah title dan body
-        drawBorder(content, x, y);
+        drawBorder(
+                content,
+                x,
+                y,
+                size.width(),
+                size.height()
+        );
 
         // nama pokin
-        drawBody(content, x, y, node);
+        float bodyY = y;
+        float bodyHeight = size.height() - BOX_HEADER_HEIGHT;
+
+        drawBody(
+                content,
+                x,
+                bodyY,
+                size.width(),
+                bodyHeight,
+                node
+        );
+    }
+
+    private void drawKotak(
+            PDPageContentStream content,
+            float x,
+            float y,
+            float width,
+            float height
+    ) throws IOException {
+
+        // Border luar
+        content.addRect(
+                x,
+                y,
+                width,
+                height
+        );
+
+        content.stroke();
     }
 
     private void drawHeader(
             PDPageContentStream content,
             float x,
             float y,
+            float width,
+            float height,
             LayoutNode node
     ) throws IOException {
 
-        float headerY = y + BOX_HEIGHT - BOX_HEADER_HEIGHT;
+        final float HEADER_PADDING = 20f;
+        float headerY = y + height - BOX_HEADER_HEIGHT;
 
         // background header berwarna sesuai level
         ShapeUtils.drawFilledRect(
                 content,
                 x,
                 headerY,
-                BOX_WIDTH,
+                width,
                 BOX_HEADER_HEIGHT,
                 node.getNode().jenisPohon().getHeaderColor()
         );
@@ -301,9 +358,9 @@ public class PdfRenderer {
                 content,
                 headerTitle(node),
                 x,
-                headerY,
-                BOX_WIDTH,
-                BOX_HEADER_HEIGHT,
+                headerY + HEADER_PADDING,
+                width,
+                BOX_HEADER_HEIGHT - HEADER_PADDING * 2,
                 BOX_HEADER_FONT,
                 BOX_HEADER_FONT_SIZE,
                 node.getNode().jenisPohon().getTextColor()
@@ -324,52 +381,82 @@ public class PdfRenderer {
     private void drawBorder(
             PDPageContentStream content,
             float x,
-            float y
+            float y,
+            float width,
+            float height
     ) throws IOException {
-        content.addRect(x, y, BOX_WIDTH, BOX_HEIGHT);
-        content.stroke();
-        ShapeUtils.drawHorizontalLine(content, x, x + BOX_WIDTH, y + BOX_HEIGHT - BOX_HEADER_HEIGHT);
+        //content.addRect(x, y, width, BOX_HEIGHT);
+        //content.stroke();
+        ShapeUtils.drawHorizontalLine(
+                content,
+                x,
+                x + width,
+                y + height - BOX_HEADER_HEIGHT
+        );
     }
 
     private void drawBody(
             PDPageContentStream content,
             float x,
             float y,
+            float width,
+            float height,
             LayoutNode node
     ) throws IOException {
 
-        if (hasTujuanOpd(node)) {
-            drawTujuanOpd(content, x, y, node.getNode().nodeMetadata().tujuanOpds());
+        Node data = node.getNode();
+
+        if (hasTujuanOpd(data)) {
+            drawTujuanOpd(
+                    content,
+                    x,
+                    y,
+                    width,
+                    height,
+                    data.nodeMetadata().tujuanOpds()
+            );
             return;
         }
 
-        if (hasCrosscutting(node)) {
-            drawCrosscutting(content, x, y, node.getNode());
+        if (hasCrosscutting(data)) {
+            drawCrosscutting(
+                    content,
+                    x,
+                    y,
+                    width,
+                    height,
+                    data
+            );
             return;
         }
 
-        drawNamaPokin(content, x, y,
-                BOX_WIDTH,
-                BOX_HEIGHT - BOX_HEADER_HEIGHT,
-                node.getNode().namaPohon());
+        drawNamaPokin(
+                content,
+                x,
+                y,
+                width,
+                height,
+                data.namaPohon()
+        );
     }
 
     private static final float CROSSCUTTING_BOX_HEIGHT = 140f;
-    private static final float CROSSCUTTING_LABEL_HEIGHT = 18f;
     private static final float CROSSCUTTING_TITLE_HEIGHT = 40f;
+
+    private static final float CROSSCUTTING_LABEL_HEIGHT = 16f;
 
     private void drawCrosscutting(
             PDPageContentStream content,
             float x,
             float y,
+            float width,
+            float height,
             Node node
     ) throws IOException {
 
-        float bodyHeight = BOX_HEIGHT - BOX_HEADER_HEIGHT;
-
-        float namaHeight = bodyHeight * 0.40f;
-        float labelHeight = 16f;
-        float targetHeight = bodyHeight - namaHeight - labelHeight;
+        float namaHeight = height * 0.40f;
+        float labelHeight = CROSSCUTTING_LABEL_HEIGHT;
+        float targetHeight = height - namaHeight - labelHeight;
 
         // =====================
         // Section 1 : Nama Pohon
@@ -378,7 +465,7 @@ public class PdfRenderer {
                 content,
                 x,
                 y,
-                BOX_WIDTH,
+                width,
                 namaHeight,
                 node.namaPohon()
         );
@@ -388,7 +475,7 @@ public class PdfRenderer {
         ShapeUtils.drawHorizontalLine(
                 content,
                 x,
-                x + BOX_WIDTH,
+                x + width,
                 labelY
         );
 
@@ -397,10 +484,10 @@ public class PdfRenderer {
         // =====================
         TextUtils.drawCenteredText(
                 content,
-                "Crosscutting",
+                "CROSSCUTTING",
                 x,
                 labelY,
-                BOX_WIDTH,
+                width,
                 labelHeight,
                 BOX_BODY_FONT,
                 BOX_FONT_SIZE - 2
@@ -411,41 +498,43 @@ public class PdfRenderer {
         ShapeUtils.drawHorizontalLine(
                 content,
                 x,
-                x + BOX_WIDTH,
+                x + width,
                 targetY
         );
 
         // =====================
-        // Section 3 : Tujuan
+        // Section 3 : Tujuan Crosscutting
         // =====================
         TextUtils.drawCenteredMultilineText(
                 content,
                 buildCrosscuttingText(node),
                 x,
                 targetY,
-                BOX_WIDTH,
+                width,
                 targetHeight,
                 BOX_BODY_FONT,
                 BOX_FONT_SIZE - 1
         );
     }
 
-    private boolean hasCrosscutting(LayoutNode node) {
-        return node.getNode().nodeMetadata() != null &&
-                node.getNode().nodeMetadata().isCrosscutting() &&
-                !node.getNode().nodeMetadata().crosscuttingPokins().isEmpty();
+    private boolean hasCrosscutting(Node node) {
+        return node.nodeMetadata() != null &&
+                node.nodeMetadata().isCrosscutting() &&
+                !node.nodeMetadata().crosscuttingPokins().isEmpty();
     }
 
-    private boolean hasTujuanOpd(LayoutNode node) {
-        return node.getNode().nodeMetadata() != null &&
-                node.getNode().nodeMetadata().tujuanOpds() != null &&
-                !node.getNode().nodeMetadata().tujuanOpds().isEmpty();
+    private boolean hasTujuanOpd(Node node) {
+        return node.nodeMetadata() != null &&
+                node.nodeMetadata().tujuanOpds() != null &&
+                !node.nodeMetadata().tujuanOpds().isEmpty();
     }
 
     private void drawTujuanOpd(
             PDPageContentStream content,
             float x,
             float y,
+            float width,
+            float height,
             List<TujuanOpd> tujuanOpds
     ) throws IOException {
 
@@ -453,10 +542,9 @@ public class PdfRenderer {
             return;
         }
 
-        float bodyHeight = BOX_HEIGHT - BOX_HEADER_HEIGHT;
-        float itemHeight = bodyHeight / tujuanOpds.size();
+        float itemHeight = height / tujuanOpds.size();
 
-        float currentY = y;
+        float currentY = y + height - itemHeight;
 
         for (int i = 0; i < tujuanOpds.size(); i++) {
 
@@ -467,13 +555,23 @@ public class PdfRenderer {
                     (i + 1) + ". " + tujuan.namaTujuan(),
                     x,
                     currentY,
-                    BOX_WIDTH,
+                    width,
                     itemHeight,
                     BOX_BODY_FONT,
                     BOX_FONT_SIZE
             );
 
-            currentY += itemHeight;
+            currentY -= itemHeight;
+
+//            // Garis pemisah antar tujuan (kecuali yang terakhir)
+//            if (i < tujuanOpds.size() - 1) {
+//                ShapeUtils.drawHorizontalLine(
+//                        content,
+//                        x,
+//                        x + width,
+//                        currentY
+//                );
+//            }
         }
     }
 
@@ -485,10 +583,14 @@ public class PdfRenderer {
             float height,
             String namaPohon
     ) throws IOException {
-        // nama pokin
+
+        if (namaPohon == null || namaPohon.isBlank()) {
+            return;
+        }
+
         TextUtils.drawCenteredMultilineText(
                 content,
-                namaPohon,
+                namaPohon.trim(),
                 x,
                 y,
                 width,
@@ -511,5 +613,27 @@ public class PdfRenderer {
                         cp.namaOpdPenerima()
                 ))
                 .collect(Collectors.joining("\n\n"));
+    }
+
+    private final float TUJUAN_OPD_BOX_HEIGHT = 80f;
+    private NodeSize getNodeSize(Node node) {
+        if (node.nodeMetadata().isCrosscutting()) {
+            return new NodeSize(
+                    BOX_WIDTH,
+                    CROSSCUTTING_BOX_HEIGHT
+            );
+        }
+
+        if (hasTujuanOpd(node)) {
+            return new NodeSize(
+                    BOX_WIDTH,
+                    TUJUAN_OPD_BOX_HEIGHT
+            );
+        }
+
+        return new NodeSize(
+                BOX_WIDTH,
+                BOX_HEIGHT
+        );
     }
 }
