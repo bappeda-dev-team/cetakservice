@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.*;
 
@@ -342,7 +343,97 @@ public class PdfRenderer {
             return;
         }
 
-        drawNamaPokin(content, x, y, node.getNode().namaPohon());
+        if (hasCrosscutting(node)) {
+            drawCrosscutting(content, x, y, node.getNode());
+            return;
+        }
+
+        drawNamaPokin(content, x, y,
+                BOX_WIDTH,
+                BOX_HEIGHT - BOX_HEADER_HEIGHT,
+                node.getNode().namaPohon());
+    }
+
+    private static final float CROSSCUTTING_BOX_HEIGHT = 140f;
+    private static final float CROSSCUTTING_LABEL_HEIGHT = 18f;
+    private static final float CROSSCUTTING_TITLE_HEIGHT = 40f;
+
+    private void drawCrosscutting(
+            PDPageContentStream content,
+            float x,
+            float y,
+            Node node
+    ) throws IOException {
+
+        float bodyHeight = BOX_HEIGHT - BOX_HEADER_HEIGHT;
+
+        float namaHeight = bodyHeight * 0.40f;
+        float labelHeight = 16f;
+        float targetHeight = bodyHeight - namaHeight - labelHeight;
+
+        // =====================
+        // Section 1 : Nama Pohon
+        // =====================
+        drawNamaPokin(
+                content,
+                x,
+                y,
+                BOX_WIDTH,
+                namaHeight,
+                node.namaPohon()
+        );
+
+        float labelY = y + namaHeight;
+
+        ShapeUtils.drawHorizontalLine(
+                content,
+                x,
+                x + BOX_WIDTH,
+                labelY
+        );
+
+        // =====================
+        // Section 2 : Label
+        // =====================
+        TextUtils.drawCenteredText(
+                content,
+                "Crosscutting",
+                x,
+                labelY,
+                BOX_WIDTH,
+                labelHeight,
+                BOX_BODY_FONT,
+                BOX_FONT_SIZE - 2
+        );
+
+        float targetY = labelY + labelHeight;
+
+        ShapeUtils.drawHorizontalLine(
+                content,
+                x,
+                x + BOX_WIDTH,
+                targetY
+        );
+
+        // =====================
+        // Section 3 : Tujuan
+        // =====================
+        TextUtils.drawCenteredMultilineText(
+                content,
+                buildCrosscuttingText(node),
+                x,
+                targetY,
+                BOX_WIDTH,
+                targetHeight,
+                BOX_BODY_FONT,
+                BOX_FONT_SIZE - 1
+        );
+    }
+
+    private boolean hasCrosscutting(LayoutNode node) {
+        return node.getNode().nodeMetadata() != null &&
+                node.getNode().nodeMetadata().isCrosscutting() &&
+                !node.getNode().nodeMetadata().crosscuttingPokins().isEmpty();
     }
 
     private boolean hasTujuanOpd(LayoutNode node) {
@@ -390,6 +481,8 @@ public class PdfRenderer {
             PDPageContentStream content,
             float x,
             float y,
+            float width,
+            float height,
             String namaPohon
     ) throws IOException {
         // nama pokin
@@ -398,10 +491,25 @@ public class PdfRenderer {
                 namaPohon,
                 x,
                 y,
-                BOX_WIDTH,
-                BOX_HEIGHT - BOX_HEADER_HEIGHT,
+                width,
+                height,
                 BOX_BODY_FONT,
                 BOX_FONT_SIZE
         );
+    }
+
+    private String buildCrosscuttingText(Node node) {
+
+        return node.nodeMetadata()
+                .crosscuttingPokins()
+                .stream()
+                .map(cp -> """
+                    %s
+                    %s
+                    """.formatted(
+                        cp.namaPohonPenerima(),
+                        cp.namaOpdPenerima()
+                ))
+                .collect(Collectors.joining("\n\n"));
     }
 }

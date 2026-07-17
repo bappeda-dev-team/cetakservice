@@ -18,6 +18,11 @@ public enum JenisPohon {
     TACTICAL("Tactical", Palette.BIRU, Palette.NETRAL),
     OPERATIONAL("Operational", Palette.HIJAU, Palette.NETRAL),
     OPERATIONAL_N("Operational N", Palette.HIJAU, Palette.NETRAL),
+    // CROSSCUTTING
+    STRATEGIC_CROSSCUTTING("Startegic Crosscuttig", Palette.MERAH, Palette.NETRAL),
+    TACTICAL_CROSSCUTTING("Tactical Crosscutting", Palette.BIRU, Palette.NETRAL),
+    OPERATIONAL_CROSSCUTTING("Operational Crosscutting", Palette.HIJAU, Palette.NETRAL),
+    OPERATIONAL_N_CROSSCUTTING("Operational N Crosscutting", Palette.HIJAU, Palette.NETRAL),
     // BASE CASE
     POHON_KINERJA("POHON KINERJA", Palette.NETRAL, Palette.BLACK);
 
