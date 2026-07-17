@@ -36,7 +36,7 @@ public class PokinOpdPDFGenerator {
             // start cover page
             // tulis halaman judul di method ini
             // start cover page
-            PDPage pageCover = new PDPage(PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A3));
+            PDPage pageCover = new PDPage(PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A1));
             document.addPage(pageCover);
             // tree for cover
             Node coverTree = renderTreeBuilder.buildCover(root);

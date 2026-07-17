@@ -1,39 +1,39 @@
 package cc.kertaskerja.cetakservice.pdf.pokin;
 
-
 import java.awt.Color;
 
 public enum JenisPohon {
     // PEMDA
-    TEMATIK("Tematik", Palette.NETRAL, Palette.BLACK),
-    SUB_TEMATIK("Sub Tematik", Palette.NETRAL, Palette.BLACK),
-    SUB_SUB_TEMATIK("Sub Sub Tematik", Palette.NETRAL, Palette.BLACK),
-    STRATEGIC_PEMDA("Startegic Pemda", Palette.MERAH, Palette.NETRAL),
-    TACTICAL_PEMDA("Tactical Pemda", Palette.BIRU, Palette.NETRAL),
-    OPERATIONAL_PEMDA("Operational Pemda", Palette.HIJAU, Palette.NETRAL),
+    TEMATIK("Tematik", Palette.NETRAL, Palette.NETRAL, Palette.BLACK),
+    SUB_TEMATIK("Sub Tematik", Palette.NETRAL, Palette.NETRAL, Palette.BLACK),
+    SUB_SUB_TEMATIK("Sub Sub Tematik", Palette.NETRAL, Palette.NETRAL, Palette.BLACK),
+    STRATEGIC_PEMDA("Startegic Pemda", Palette.MERAH_AWAL, Palette.MERAH_AKHIR, Palette.NETRAL),
+    TACTICAL_PEMDA("Tactical Pemda", Palette.BIRU_AWAL, Palette.BIRU_AKHIR, Palette.NETRAL),
+    OPERATIONAL_PEMDA("Operational Pemda", Palette.HIJAU_AWAL, Palette.HIJAU_AKHIR, Palette.NETRAL),
     // OPD
-    OPD("Tujuan OPD", Palette.NETRAL, Palette.BLACK),
-    TUJUAN("Tujuan", Palette.NETRAL, Palette.BLACK),
-    STRATEGIC("Startegic", Palette.MERAH, Palette.NETRAL),
-    TACTICAL("Tactical", Palette.BIRU, Palette.NETRAL),
-    OPERATIONAL("Operational", Palette.HIJAU, Palette.NETRAL),
-    OPERATIONAL_N("Operational N", Palette.HIJAU, Palette.NETRAL),
+    OPD("Tujuan OPD", Palette.NETRAL, Palette.NETRAL, Palette.BLACK),
+    TUJUAN("Tujuan", Palette.NETRAL, Palette.NETRAL, Palette.BLACK),
+    STRATEGIC("Startegic", Palette.MERAH_AWAL, Palette.MERAH_AWAL, Palette.NETRAL),
+    TACTICAL("Tactical", Palette.BIRU_AWAL, Palette.BIRU_AWAL, Palette.NETRAL),
+    OPERATIONAL("Operational", Palette.HIJAU_AKHIR, Palette.HIJAU_AKHIR, Palette.NETRAL),
+    OPERATIONAL_N("Operational N", Palette.NETRAL, Palette.NETRAL, Palette.HIJAU_AKHIR),
     // CROSSCUTTING
-    STRATEGIC_CROSSCUTTING("Startegic Crosscuttig", Palette.MERAH, Palette.NETRAL),
-    TACTICAL_CROSSCUTTING("Tactical Crosscutting", Palette.BIRU, Palette.NETRAL),
-    OPERATIONAL_CROSSCUTTING("Operational Crosscutting", Palette.HIJAU, Palette.NETRAL),
-    OPERATIONAL_N_CROSSCUTTING("Operational N Crosscutting", Palette.HIJAU, Palette.NETRAL),
+    STRATEGIC_CROSSCUTTING("Startegic Crosscuttig", Palette.NETRAL, Palette.NETRAL, Palette.MERAH_AWAL),
+    TACTICAL_CROSSCUTTING("Tactical Crosscutting", Palette.NETRAL, Palette.NETRAL, Palette.BIRU_AWAL),
+    OPERATIONAL_CROSSCUTTING("Operational Crosscutting", Palette.NETRAL, Palette.NETRAL, Palette.HIJAU_AWAL),
+    OPERATIONAL_N_CROSSCUTTING("Operational N Crosscutting", Palette.NETRAL, Palette.NETRAL, Palette.HIJAU_AKHIR),
     // BASE CASE
-    POHON_KINERJA("POHON KINERJA", Palette.NETRAL, Palette.BLACK);
-
+    POHON_KINERJA("POHON KINERJA", Palette.NETRAL, Palette.NETRAL, Palette.BLACK);
 
     private final String label;
-    private final Color headerColor;
+    private final Color colorAwal;
+    private final Color colorAkhir;
     private final Color textColor;
 
-    JenisPohon(String label, Color headerColor, Color textColor) {
+    JenisPohon(String label, Color colorAwal, Color colorAkhir, Color textColor) {
         this.label = label;
-        this.headerColor = headerColor;
+        this.colorAwal = colorAwal;
+        this.colorAkhir = colorAkhir;
         this.textColor = textColor;
     }
 
@@ -41,19 +41,25 @@ public enum JenisPohon {
         return label;
     }
 
-    public Color getHeaderColor() {
-        return headerColor;
+    public Color getColorAwal() {
+        return colorAwal;
+    }
+    public Color getColorAkhir() {
+        return colorAkhir;
     }
 
     public Color getTextColor() {
         return textColor;
     }
 
-    private static final class Palette {
-        static final Color MERAH = new Color(0xCA3636);
-        static final Color BIRU = new Color(0x3673CA);
-        static final Color HIJAU = new Color(0x139052);
-        static final Color NETRAL = new Color(0xFAFAF2);
+    public static final class Palette {
+        static final Color MERAH_AWAL = new Color(0xCA3636);
+        static final Color MERAH_AKHIR = new Color(0xBD04A1);
+        static final Color BIRU_AWAL = new Color(0x3673CA);
+        static final Color BIRU_AKHIR = new Color(0x08D2FB);
+        static final Color HIJAU_AWAL = new Color(0x007982);
+        static final Color HIJAU_AKHIR = new Color(0x2DCB06);
         static final Color BLACK = new Color(0x1B0C0C);
+        static final Color NETRAL = new Color(0xFAFAF2);
     }
 }

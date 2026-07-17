@@ -27,7 +27,7 @@ public class ViewGenerator {
     private boolean shouldCreatePage(Node node, ViewMode mode) {
         return switch (mode) {
             case PEMDA -> node.jenisPohon() == JenisPohon.SUB_TEMATIK;
-            case OPD -> node.jenisPohon() == JenisPohon.STRATEGIC_PEMDA || node.jenisPohon() == JenisPohon.STRATEGIC;
+            case OPD -> node.jenisPohon() == JenisPohon.STRATEGIC_PEMDA || node.jenisPohon() == JenisPohon.STRATEGIC || node.jenisPohon() == JenisPohon.STRATEGIC_CROSSCUTTING;
         };
     }
 
