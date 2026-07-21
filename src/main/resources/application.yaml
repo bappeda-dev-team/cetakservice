@@ -36,6 +36,8 @@ management:
 
 kertaskerja:
   up-message: "KERTASKERJA CETAK SERVICE IS UP"
+  allowed-hosts:
+    - http://localhost:3000
   services:
     perencanaan:
       name: perencanaan

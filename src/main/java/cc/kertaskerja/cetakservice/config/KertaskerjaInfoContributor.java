@@ -30,6 +30,7 @@ public class KertaskerjaInfoContributor implements InfoContributor {
 
         builder.withDetail("kertaskerja", Map.of(
                 "upMessage", kertaskerjaProperties.upMessage(),
+                "allowedHosts", kertaskerjaProperties.allowedHosts(),
                 "services", services
         ));
     }
