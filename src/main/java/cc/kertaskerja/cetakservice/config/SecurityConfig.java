@@ -36,7 +36,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "localhost:3000",
                 "http://localhost:3000",
-                "https://kabsleman.kertaskerja.cc"
+                "https://kabsleman.kertaskerja.cc",
+                "https://kabsukoharjo.kertaskerja.cc"
         ));
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
