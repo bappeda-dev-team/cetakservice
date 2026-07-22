@@ -27,15 +27,17 @@ public class ViewGenerator {
     private boolean shouldCreatePage(Node node, ViewMode mode) {
         return switch (mode) {
             case PEMDA -> node.jenisPohon() == JenisPohon.SUB_TEMATIK;
-            case OPD -> node.jenisPohon() == JenisPohon.STRATEGIC_PEMDA || node.jenisPohon() == JenisPohon.STRATEGIC;
+            case OPD -> node.jenisPohon() == JenisPohon.STRATEGIC_PEMDA
+                    || node.jenisPohon() == JenisPohon.STRATEGIC
+                    || node.jenisPohon() == JenisPohon.STRATEGIC_CROSSCUTTING;
         };
     }
 
     private void generatePagePlan(ViewMode mode,
-                                  Node current,
-                                  List<Node> ancestors,
-                                  List<PagePlan> pagePlans,
-                                  Integer sequence) {
+            Node current,
+            List<Node> ancestors,
+            List<PagePlan> pagePlans,
+            Integer sequence) {
         if (shouldCreatePage(current, mode)) {
             pagePlans.add(new PagePlan(sequence, List.copyOf(ancestors), current));
         }
@@ -58,8 +60,7 @@ public class ViewGenerator {
                     child,
                     nextAncestors,
                     pagePlans,
-                    nextSequence
-            );
+                    nextSequence);
         }
     }
 }

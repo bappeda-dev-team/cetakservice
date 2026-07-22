@@ -18,7 +18,7 @@ public class LayoutEngine {
 
         LayoutBound layoutBound = calculateBounds(layoutRoot);
 
-        //print(layoutRoot, 0);
+        // print(layoutRoot, 0);
 
         return new LayoutResult(layoutRoot, layoutBound);
     }
@@ -45,13 +45,27 @@ public class LayoutEngine {
             total += calculateSubTreeWidth(child);
         }
 
-        total += (node.getChildren().size() -1) * SIBLING_GAP;
+        total += (node.getChildren().size() - 1) * SIBLING_GAP;
 
         float width = Math.max(total, BOX_WIDTH);
 
         node.setSubtreeWidth(width);
 
         return width;
+    }
+
+    private float getNodeHeight(Node node) {
+        if (node.nodeMetadata() != null && node.nodeMetadata().isCrosscutting()) {
+            return 150f; // samakan dengan CROSSCUTTING_BOX_HEIGHT saat ini
+        }
+
+        if (node.nodeMetadata() != null
+                && node.nodeMetadata().tujuanOpds() != null
+                && !node.nodeMetadata().tujuanOpds().isEmpty()) {
+            return 80f; // samakan dengan TUJUAN_OPD_BOX_HEIGHT
+        }
+
+        return BOX_HEIGHT;
     }
 
     private void layoutPosition(LayoutNode node, float areaLeft, float top) {
@@ -68,8 +82,7 @@ public class LayoutEngine {
             layoutPosition(
                     child,
                     childAreaLeft,
-                    top + BOX_HEIGHT + LEVEL_GAP
-            );
+                    top + getNodeHeight(node.getNode()) + LEVEL_GAP);
 
             childAreaLeft += childWidth + SIBLING_GAP;
         }
