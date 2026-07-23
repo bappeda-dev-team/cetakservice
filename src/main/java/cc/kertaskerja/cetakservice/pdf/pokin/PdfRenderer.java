@@ -100,6 +100,8 @@ public class PdfRenderer {
 
         float y = mediaBox.getHeight() - PAPER_MARGIN_TOP;
 
+        String sanitizedText = sanitize(title);
+
         content.beginText();
         content.setFont(font, fontSize);
         content.newLineAtOffset(x, y);
