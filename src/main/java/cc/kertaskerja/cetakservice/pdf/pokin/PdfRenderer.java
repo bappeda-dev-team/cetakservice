@@ -103,36 +103,32 @@ public class PdfRenderer {
         content.beginText();
         content.setFont(font, fontSize);
         content.newLineAtOffset(x, y);
-        content.showText(title);
+        content.showText(sanitizedText);
         content.endText();
     }
 
     private ContentArea getContentArea(PDPage page) {
-        float width =
-                page.getMediaBox().getWidth()
-                        - PAGE_MARGIN_LEFT
-                        - PAGE_MARGIN_RIGHT;
+        float width = page.getMediaBox().getWidth()
+                - PAGE_MARGIN_LEFT
+                - PAGE_MARGIN_RIGHT;
 
-        float height =
-                page.getMediaBox().getHeight()
-                        - PAGE_MARGIN_TOP
-                        - PAGE_MARGIN_BOTTOM
-                        - PAGE_HEADER_HEIGHT
-                        - PAGE_HEADER_SPACING;
+        float height = page.getMediaBox().getHeight()
+                - PAGE_MARGIN_TOP
+                - PAGE_MARGIN_BOTTOM
+                - PAGE_HEADER_HEIGHT
+                - PAGE_HEADER_SPACING;
 
         return new ContentArea(PAGE_MARGIN_LEFT, PAGE_MARGIN_BOTTOM, width, height);
     }
 
     private void drawContentBorder(
             PDPageContentStream content,
-            ContentArea contentArea
-    ) throws IOException {
+            ContentArea contentArea) throws IOException {
         content.addRect(
                 contentArea.x(),
                 contentArea.y(),
                 contentArea.width(),
-                contentArea.height()
-        );
+                contentArea.height());
 
         content.stroke();
     }
@@ -140,8 +136,7 @@ public class PdfRenderer {
     private void drawPageTitle(
             PDPageContentStream content,
             PDPage page,
-            RenderPage renderPage
-    ) throws IOException {
+            RenderPage renderPage) throws IOException {
         float x = 20f;
         float y = page.getMediaBox().getHeight() - PAPER_MARGIN_TOP;
         String titleText = renderPage.judulHalaman();
@@ -153,12 +148,11 @@ public class PdfRenderer {
             PDPage page,
             LayoutNode parent,
             float contentOffsetX,
-            float contentStartY
-    ) throws IOException {
+            float contentStartY) throws IOException {
 
         drawNode(content, page, parent, contentOffsetX, contentStartY);
 
-        drawConnectors(content, page, parent,  contentOffsetX, contentStartY);
+        drawConnectors(content, page, parent, contentOffsetX, contentStartY);
 
         for (LayoutNode child : parent.getChildren()) {
             drawTree(content, page, child, contentOffsetX, contentStartY);
@@ -173,8 +167,7 @@ public class PdfRenderer {
             PDPage page,
             LayoutNode parent,
             float contentOffsetX,
-            float contentStartY
-    ) throws IOException {
+            float contentStartY) throws IOException {
 
         List<LayoutNode> children = parent.getChildren();
         // no children = no connector
@@ -202,8 +195,7 @@ public class PdfRenderer {
                     content,
                     parentCenterX,
                     parentBottomY,
-                    childTopY
-            );
+                    childTopY);
 
             return;
         }
@@ -220,49 +212,42 @@ public class PdfRenderer {
                 content,
                 parentCenterX,
                 parentBottomY,
-                busY
-        );
+                busY);
 
         // horizontal bus
-        float startX =
-                children.getFirst().getX() + contentOffsetX;
+        float startX = children.getFirst().getX() + contentOffsetX;
 
-        float endX =
-                children.getLast().getX() + contentOffsetX;
+        float endX = children.getLast().getX() + contentOffsetX;
 
         ShapeUtils.drawHorizontalLine(
                 content,
                 startX,
                 endX,
-                busY
-        );
+                busY);
 
         // bus -> child
         for (LayoutNode child : children) {
 
-            float childCenterX =
-                    child.getX() + contentOffsetX;
+            float childCenterX = child.getX() + contentOffsetX;
 
-            float childTopY =
-                    pageHeight - child.getY() - contentStartY;
+            float childTopY = pageHeight - child.getY() - contentStartY;
 
             ShapeUtils.drawVerticalLine(
                     content,
                     childCenterX,
                     busY,
-                    childTopY
-            );
+                    childTopY);
         }
     }
 
     private static final float BODY_TOP_PADDING = 4f;
+
     private void drawNode(
             PDPageContentStream content,
             PDPage page,
             LayoutNode node,
             float contentOffsetX,
-            float contentStartY
-    ) throws IOException {
+            float contentStartY) throws IOException {
 
         float pageHeight = page.getMediaBox().getHeight();
 
@@ -276,8 +261,7 @@ public class PdfRenderer {
         drawKotak(
                 content,
                 x, y,
-                size.width(), size.height()
-        );
+                size.width(), size.height());
 
         // jenis pokin
         drawHeader(
@@ -286,8 +270,7 @@ public class PdfRenderer {
                 y,
                 size.width(),
                 size.height(),
-                node
-        );
+                node);
 
         // garis pemisah title dan body
         drawBorder(
@@ -295,8 +278,7 @@ public class PdfRenderer {
                 x,
                 y,
                 size.width(),
-                size.height()
-        );
+                size.height());
 
         // nama pokin
         float bodyY = y;
@@ -308,8 +290,7 @@ public class PdfRenderer {
                 bodyY,
                 size.width(),
                 bodyHeight,
-                node
-        );
+                node);
     }
 
     private void drawKotak(
@@ -317,16 +298,14 @@ public class PdfRenderer {
             float x,
             float y,
             float width,
-            float height
-    ) throws IOException {
+            float height) throws IOException {
 
         // Border luar
         content.addRect(
                 x,
                 y,
                 width,
-                height
-        );
+                height);
 
         content.stroke();
     }
@@ -337,8 +316,7 @@ public class PdfRenderer {
             float y,
             float width,
             float height,
-            LayoutNode node
-    ) throws IOException {
+            LayoutNode node) throws IOException {
 
         final float HEADER_PADDING = 20f;
         float headerY = y + height - BOX_HEADER_HEIGHT;
@@ -350,8 +328,7 @@ public class PdfRenderer {
                 headerY,
                 width,
                 BOX_HEADER_HEIGHT,
-                node.getNode().jenisPohon().getHeaderColor()
-        );
+                node.getNode().jenisPohon().getHeaderColor());
 
         // judul pokin: "LABEL id" (mengikuti tampilan web, mis. "Startegic 665")
         TextUtils.drawCenteredText(
@@ -363,8 +340,7 @@ public class PdfRenderer {
                 BOX_HEADER_HEIGHT - HEADER_PADDING * 2,
                 BOX_HEADER_FONT,
                 BOX_HEADER_FONT_SIZE,
-                node.getNode().jenisPohon().getTextColor()
-        );
+                node.getNode().jenisPohon().getTextColor());
     }
 
     private String headerTitle(LayoutNode node) {
@@ -383,16 +359,14 @@ public class PdfRenderer {
             float x,
             float y,
             float width,
-            float height
-    ) throws IOException {
-        //content.addRect(x, y, width, BOX_HEIGHT);
-        //content.stroke();
+            float height) throws IOException {
+        // content.addRect(x, y, width, BOX_HEIGHT);
+        // content.stroke();
         ShapeUtils.drawHorizontalLine(
                 content,
                 x,
                 x + width,
-                y + height - BOX_HEADER_HEIGHT
-        );
+                y + height - BOX_HEADER_HEIGHT);
     }
 
     private void drawBody(
@@ -401,8 +375,7 @@ public class PdfRenderer {
             float y,
             float width,
             float height,
-            LayoutNode node
-    ) throws IOException {
+            LayoutNode node) throws IOException {
 
         Node data = node.getNode();
 
@@ -413,8 +386,7 @@ public class PdfRenderer {
                     y,
                     width,
                     height,
-                    data.nodeMetadata().tujuanOpds()
-            );
+                    data.nodeMetadata().tujuanOpds());
             return;
         }
 
@@ -425,8 +397,7 @@ public class PdfRenderer {
                     y,
                     width,
                     height,
-                    data
-            );
+                    data);
             return;
         }
 
@@ -441,7 +412,7 @@ public class PdfRenderer {
     }
 
     private static final float CROSSCUTTING_BOX_HEIGHT = 140f;
-    private static final float CROSSCUTTING_TITLE_HEIGHT = 40f;
+    // private static final float CROSSCUTTING_TITLE_HEIGHT = 40f;
 
     private static final float CROSSCUTTING_LABEL_HEIGHT = 16f;
 
@@ -550,28 +521,29 @@ public class PdfRenderer {
 
             TujuanOpd tujuan = tujuanOpds.get(i);
 
+            String sanitizedText = sanitize(tujuan.namaTujuan());
+
             TextUtils.drawCenteredMultilineText(
                     content,
-                    (i + 1) + ". " + tujuan.namaTujuan(),
+                    (i + 1) + ". " + sanitizedText,
                     x,
                     currentY,
                     width,
                     itemHeight,
                     BOX_BODY_FONT,
-                    BOX_FONT_SIZE
-            );
+                    BOX_FONT_SIZE);
 
             currentY -= itemHeight;
 
-//            // Garis pemisah antar tujuan (kecuali yang terakhir)
-//            if (i < tujuanOpds.size() - 1) {
-//                ShapeUtils.drawHorizontalLine(
-//                        content,
-//                        x,
-//                        x + width,
-//                        currentY
-//                );
-//            }
+            // // Garis pemisah antar tujuan (kecuali yang terakhir)
+            // if (i < tujuanOpds.size() - 1) {
+            // ShapeUtils.drawHorizontalLine(
+            // content,
+            // x,
+            // x + width,
+            // currentY
+            // );
+            // }
         }
     }
 
@@ -581,23 +553,23 @@ public class PdfRenderer {
             float y,
             float width,
             float height,
-            String namaPohon
-    ) throws IOException {
+            String namaPohon) throws IOException {
 
         if (namaPohon == null || namaPohon.isBlank()) {
             return;
         }
 
+        String sanitizedText = sanitize(namaPohon);
+
         TextUtils.drawCenteredMultilineText(
                 content,
-                namaPohon.trim(),
+                sanitizedText,
                 x,
                 y,
                 width,
                 height,
                 BOX_BODY_FONT,
-                BOX_FONT_SIZE
-        );
+                BOX_FONT_SIZE);
     }
 
     private String buildCrosscuttingText(Node node) {
@@ -606,34 +578,42 @@ public class PdfRenderer {
                 .crosscuttingPokins()
                 .stream()
                 .map(cp -> """
-                    %s
-                    %s
-                    """.formatted(
+                        %s
+                        %s
+                        """.formatted(
                         cp.namaPohonPenerima(),
-                        cp.namaOpdPenerima()
-                ))
+                        cp.namaOpdPenerima()))
                 .collect(Collectors.joining("\n\n"));
     }
 
     private final float TUJUAN_OPD_BOX_HEIGHT = 80f;
+
     private NodeSize getNodeSize(Node node) {
         if (node.nodeMetadata().isCrosscutting()) {
             return new NodeSize(
                     BOX_WIDTH,
-                    CROSSCUTTING_BOX_HEIGHT
-            );
+                    CROSSCUTTING_BOX_HEIGHT);
         }
 
         if (hasTujuanOpd(node)) {
             return new NodeSize(
                     BOX_WIDTH,
-                    TUJUAN_OPD_BOX_HEIGHT
-            );
+                    TUJUAN_OPD_BOX_HEIGHT);
         }
 
         return new NodeSize(
                 BOX_WIDTH,
-                BOX_HEIGHT
-        );
+                BOX_HEIGHT);
+    }
+
+    private String sanitize(String text) {
+        return text
+                .replace('\u2010', '-')
+                .replace('\u2011', '-')
+                .replace('\u2012', '-')
+                .replace('\u2013', '-')
+                .replace('\u2014', '-')
+                .replace('\u00A0', ' ')
+                .trim();
     }
 }
