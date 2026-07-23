@@ -6,6 +6,14 @@ public record CrossCuttingPokin(
         @JsonProperty("is_crosscutting_diterima")
         boolean isCrosscuttingDiterima,
 
+    // PEMBERI
+        @JsonProperty("nama_pohon_pemberi")
+        String namaPohonPemberi,
+
+        @JsonProperty("nama_opd_pemberi")
+        String namaOpdPemberi,
+
+    // PENERIMA
         @JsonProperty("nama_pohon_penerima")
         String namaPohonPenerima,
 

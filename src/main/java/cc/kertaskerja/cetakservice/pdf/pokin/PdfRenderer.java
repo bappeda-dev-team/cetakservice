@@ -424,10 +424,8 @@ public class PdfRenderer {
                 data.namaPohon());
     }
 
-    private static final float CROSSCUTTING_BOX_HEIGHT = 140f;
-    // private static final float CROSSCUTTING_TITLE_HEIGHT = 40f;
-
-    private static final float CROSSCUTTING_LABEL_HEIGHT = 16f;
+    private static final float CROSSCUTTING_BOX_HEIGHT = 200f;
+    private static final float CROSSCUTTING_PADDING = 6f;
 
     private void drawCrosscutting(
             PDPageContentStream content,
@@ -437,60 +435,46 @@ public class PdfRenderer {
             float height,
             Node node) throws IOException {
 
-        float namaHeight = height * 0.40f;
-        float labelHeight = CROSSCUTTING_LABEL_HEIGHT;
-        float targetHeight = height - namaHeight - labelHeight;
+        float dividerY = y + height / 2f;
 
         // =====================
-        // Section 1 : Nama Pohon
+        // AREA ATAS (PEMBERI)
         // =====================
-        drawNamaPokin(
-                content,
-                x,
-                y,
-                width,
-                namaHeight,
-                node.namaPohon());
+        float topY = dividerY;
+        float topHeight = y + height - dividerY;
 
-        float labelY = y + namaHeight;
-
-        ShapeUtils.drawHorizontalLine(
-                content,
-                x,
-                x + width,
-                labelY);
-
-        // =====================
-        // Section 2 : Label
-        // =====================
-        TextUtils.drawCenteredText(
-                content,
-                "CROSSCUTTING",
-                x,
-                labelY,
-                width,
-                labelHeight,
-                BOX_BODY_FONT,
-                BOX_FONT_SIZE - 2);
-
-        float targetY = labelY + labelHeight;
-
-        ShapeUtils.drawHorizontalLine(
-                content,
-                x,
-                x + width,
-                targetY);
-
-        // =====================
-        // Section 3 : Tujuan Crosscutting
-        // =====================
         TextUtils.drawCenteredMultilineText(
                 content,
-                buildCrosscuttingText(node),
+                buildCrosscuttingPemberi(node),
                 x,
-                targetY,
+                topY,
                 width,
-                targetHeight,
+                topHeight,
+                BOX_BODY_FONT,
+                BOX_FONT_SIZE - 1);
+
+        // =====================
+        // GARIS PEMISAH
+        // =====================
+        ShapeUtils.drawHorizontalLine(
+                content,
+                x,
+                x + width,
+                dividerY);
+
+        // =====================
+        // AREA BAWAH (PENERIMA)
+        // =====================
+        float bottomY = y;
+        float bottomHeight = dividerY - y;
+
+        TextUtils.drawCenteredMultilineText(
+                content,
+                buildCrosscuttingPenerima(node),
+                x,
+                bottomY,
+                width,
+                bottomHeight,
                 BOX_BODY_FONT,
                 BOX_FONT_SIZE - 1);
     }
@@ -578,7 +562,7 @@ public class PdfRenderer {
                 BOX_FONT_SIZE);
     }
 
-    private String buildCrosscuttingText(Node node) {
+    private String buildCrosscuttingPemberi(Node node) {
 
         return node.nodeMetadata()
                 .crosscuttingPokins()
@@ -586,16 +570,46 @@ public class PdfRenderer {
                 .map(cp -> """
                         %s
                         %s
+                        %s
+                        %s
                         """.formatted(
+                        "--OPD-ASAL--",
+                        cp.namaOpdPemberi(),
+                        "--NAMA-POHON-ASAL--",
+                        cp.namaPohonPemberi()))
+                .collect(Collectors.joining("\n\n\n\n"));
+    }
+
+    private String buildCrosscuttingPenerima(Node node) {
+
+        return node.nodeMetadata()
+                .crosscuttingPokins()
+                .stream()
+                .map(cp -> """
+                        %s
+                        %s
+                        %s
+                        %s
+                        %s
+                        %s
+                        %s
+                        %s
+                        """.formatted(
+                        "--STATUS--",
+                        cp.statusCrosscutting(),
+                        "--OPD-PENERIMA--",
+                        cp.namaOpdPenerima(),
+                        "--NAMA-POHON-PENERIMA--",
                         cp.namaPohonPenerima(),
-                        cp.namaOpdPenerima()))
-                .collect(Collectors.joining("\n\n"));
+                        "--KETERANGAN--",
+                        cp.keteranganCrosscutting()))
+                .collect(Collectors.joining("\n\n\n\n\n\n\n\n"));
     }
 
     private final float TUJUAN_OPD_BOX_HEIGHT = 80f;
 
     private NodeSize getNodeSize(Node node) {
-        if (node.nodeMetadata().isCrosscutting()) {
+        if (hasCrosscutting(node)) {
             return new NodeSize(
                     BOX_WIDTH,
                     CROSSCUTTING_BOX_HEIGHT);

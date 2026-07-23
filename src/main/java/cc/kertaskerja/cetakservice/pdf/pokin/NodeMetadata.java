@@ -36,6 +36,8 @@ public record NodeMetadata(
         List<CrossCuttingPokin> crosscutItems = item.pokinMetadata().crossCuttingPokins()
                 .stream().map(cp ->
                         new CrossCuttingPokin(
+                                cp.namaPohonPemberi(),
+                                cp.namaOpdPemberi(),
                                 cp.namaPohonPenerima(),
                                 cp.namaOpdPenerima(),
                                 cp.keteranganCrosscutting(),
@@ -73,6 +75,8 @@ public record NodeMetadata(
 }
 
 record CrossCuttingPokin(
+        String namaPohonPemberi,
+        String namaOpdPemberi,
         String namaPohonPenerima,
         String namaOpdPenerima,
         String keteranganCrosscutting,
