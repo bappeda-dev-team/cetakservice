@@ -18,11 +18,26 @@ public class PokinOpdPDFGenerator {
     private final ViewGenerator viewGenerator;
     private final RenderTreeBuilder renderTreeBuilder;
 
-    public PokinOpdPDFGenerator(LayoutEngine layoutEngine, PdfRenderer pdfRenderer, ViewGenerator viewGenerator, RenderTreeBuilder renderTreeBuilder) {
+    public PokinOpdPDFGenerator(LayoutEngine layoutEngine, PdfRenderer pdfRenderer, ViewGenerator viewGenerator,
+            RenderTreeBuilder renderTreeBuilder) {
         this.layoutEngine = layoutEngine;
         this.pdfRenderer = pdfRenderer;
         this.viewGenerator = viewGenerator;
         this.renderTreeBuilder = renderTreeBuilder;
+    }
+
+    private PDRectangle createCoverPageSize(LayoutResult layout) {
+        PDRectangle minimumSize = PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A3);
+
+        float treeWidth = layout.bound().width() + 120f;
+        float treeHeight = layout.bound().height() + 150f;
+
+        float requiredWidth = treeWidth + 60f; // margin kiri + kanan
+        float requiredHeight = treeHeight + 140f; // judul + margin atas/bawah
+
+        return new PDRectangle(
+                Math.max(minimumSize.getWidth(), requiredWidth),
+                Math.max(minimumSize.getHeight(), requiredHeight));
     }
 
     public byte[] generatePDF(Node root) {
@@ -30,24 +45,19 @@ public class PokinOpdPDFGenerator {
         try (
                 // berawal dari document
                 PDDocument document = new PDDocument();
-                ByteArrayOutputStream output = new ByteArrayOutputStream()
-        ) {
+                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
 
-            // start cover page
-            // tulis halaman judul di method ini
-            // start cover page
-            PDPage pageCover = new PDPage(PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A3));
-            document.addPage(pageCover);
-            // tree for cover
             Node coverTree = renderTreeBuilder.buildCover(root);
             LayoutResult layoutCover = layoutEngine.layout(coverTree);
+
+            PDPage pageCover = new PDPage(createCoverPageSize(layoutCover));
+            document.addPage(pageCover);
+
             RenderCover cover = new RenderCover(
                     "POHON KINERJA OPD",
-                    layoutCover
-            );
+                    layoutCover);
 
-            try (PDPageContentStream content =
-                         new PDPageContentStream(document, pageCover)) {
+            try (PDPageContentStream content = new PDPageContentStream(document, pageCover)) {
                 pdfRenderer.renderCover(pageCover, content, cover);
             }
             // end cover page
@@ -61,22 +71,18 @@ public class PokinOpdPDFGenerator {
                 RenderTree renderTree = renderTreeBuilder.build(pagePlan);
                 LayoutResult layout = layoutEngine.layout(renderTree.root());
 
-                String judulHalaman =
-                        "%s %d - %s".formatted(
-                                renderTree.current().jenisPohon().getLabel(),
-                                pagePlan.sequence(),
-                                renderTree.current().namaPohon()
-                        );
+                String judulHalaman = "%s %d - %s".formatted(
+                        renderTree.current().jenisPohon().getLabel(),
+                        pagePlan.sequence(),
+                        renderTree.current().namaPohon());
 
                 RenderPage renderPage = new RenderPage(
                         judulHalaman,
                         renderTree.current().jenisPohon().getLabel(),
                         renderTree.current().namaPohon(),
-                        layout
-                );
+                        layout);
 
-                try (PDPageContentStream content =
-                             new PDPageContentStream(document, page)) {
+                try (PDPageContentStream content = new PDPageContentStream(document, page)) {
                     pdfRenderer.render(page, content, renderPage);
                 }
             }

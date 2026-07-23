@@ -1,8 +1,25 @@
 package cc.kertaskerja.cetakservice.pdf.pokin;
 
-import cc.kertaskerja.cetakservice.pdf.NodePosition;
-import cc.kertaskerja.cetakservice.pdf.ShapeUtils;
-import cc.kertaskerja.cetakservice.pdf.TextUtils;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.BOX_BODY_FONT;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.BOX_FONT_SIZE;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.BOX_HEADER_FONT;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.BOX_HEADER_FONT_SIZE;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.BOX_HEADER_HEIGHT;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.BOX_HEIGHT;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.BOX_WIDTH;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAGE_HEADER_HEIGHT;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAGE_HEADER_SPACING;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAGE_MARGIN_BOTTOM;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAGE_MARGIN_LEFT;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAGE_MARGIN_RIGHT;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAGE_MARGIN_TOP;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAPER_MARGIN_TOP;
+import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.TITLE_PAGE_PADDING;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -11,24 +28,19 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.*;
+import cc.kertaskerja.cetakservice.pdf.ShapeUtils;
+import cc.kertaskerja.cetakservice.pdf.TextUtils;
 
 @Component
 public class PdfRenderer {
     public void render(
             PDPage page,
             PDPageContentStream content,
-            RenderPage renderPage
-    ) throws IOException {
+            RenderPage renderPage) throws IOException {
 
         drawPageTitle(content, page, renderPage);
         // jarak antara title dengan pohon
-        float contentStartY =
-                PAGE_MARGIN_TOP +
+        float contentStartY = PAGE_MARGIN_TOP +
                 PAGE_HEADER_HEIGHT +
                 TITLE_PAGE_PADDING +
                 PAPER_MARGIN_TOP;
@@ -51,26 +63,28 @@ public class PdfRenderer {
     public void renderCover(
             PDPage page,
             PDPageContentStream content,
-            RenderCover renderCover
-    ) throws IOException {
+            RenderCover renderCover) throws IOException {
 
         // judul cover
         title(page, content, renderCover.title());
 
         // jarak antara title dengan pohon
-        float contentStartY =
-                PAGE_MARGIN_TOP +
-                        PAGE_HEADER_HEIGHT +
-                        TITLE_PAGE_PADDING +
-                        PAPER_MARGIN_TOP;
+        float contentStartY = PAGE_MARGIN_TOP +
+                PAGE_HEADER_HEIGHT +
+                TITLE_PAGE_PADDING +
+                PAPER_MARGIN_TOP;
 
-        float visualWidth = renderCover.layout().bound().width() + BOX_WIDTH;
         float availableWidth = page.getMediaBox().getWidth()
                 - PAGE_MARGIN_LEFT
                 - PAGE_MARGIN_RIGHT;
         // biar pohon center
-        float contentOffsetX = PAGE_MARGIN_LEFT + (availableWidth - visualWidth) / 2f
-                - renderCover.layout().bound().minX();
+        float treeLeft = renderCover.layout().bound().minX() - BOX_WIDTH / 2f;
+        float treeRight = renderCover.layout().bound().maxX() + BOX_WIDTH / 2f;
+        float visualWidth = treeRight - treeLeft;
+
+        float contentOffsetX = PAGE_MARGIN_LEFT
+                + (availableWidth - visualWidth) / 2f
+                - treeLeft;
 
         ContentArea contentArea = getContentArea(page);
 
@@ -81,21 +95,19 @@ public class PdfRenderer {
     private void title(
             PDPage page,
             PDPageContentStream content,
-            String title
-    ) throws IOException {
+            String title) throws IOException {
 
         PDRectangle mediaBox = page.getMediaBox();
 
-        PDFont font =
-                new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+        PDFont font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
 
         float fontSize = 24f;
 
         /*
-         kalau mau center
-         float titleWidth = font.getStringWidth(title) / 1000f * fontSize;
-         float x = (mediaBox.getWidth() - titleWidth) / 2f;
-        */
+         * kalau mau center
+         * float titleWidth = font.getStringWidth(title) / 1000f * fontSize;
+         * float x = (mediaBox.getWidth() - titleWidth) / 2f;
+         */
         float x = 20f;
 
         float y = mediaBox.getHeight() - PAPER_MARGIN_TOP;
@@ -409,8 +421,7 @@ public class PdfRenderer {
                 y,
                 width,
                 height,
-                data.namaPohon()
-        );
+                data.namaPohon());
     }
 
     private static final float CROSSCUTTING_BOX_HEIGHT = 140f;
@@ -424,8 +435,7 @@ public class PdfRenderer {
             float y,
             float width,
             float height,
-            Node node
-    ) throws IOException {
+            Node node) throws IOException {
 
         float namaHeight = height * 0.40f;
         float labelHeight = CROSSCUTTING_LABEL_HEIGHT;
@@ -440,8 +450,7 @@ public class PdfRenderer {
                 y,
                 width,
                 namaHeight,
-                node.namaPohon()
-        );
+                node.namaPohon());
 
         float labelY = y + namaHeight;
 
@@ -449,8 +458,7 @@ public class PdfRenderer {
                 content,
                 x,
                 x + width,
-                labelY
-        );
+                labelY);
 
         // =====================
         // Section 2 : Label
@@ -463,8 +471,7 @@ public class PdfRenderer {
                 width,
                 labelHeight,
                 BOX_BODY_FONT,
-                BOX_FONT_SIZE - 2
-        );
+                BOX_FONT_SIZE - 2);
 
         float targetY = labelY + labelHeight;
 
@@ -472,8 +479,7 @@ public class PdfRenderer {
                 content,
                 x,
                 x + width,
-                targetY
-        );
+                targetY);
 
         // =====================
         // Section 3 : Tujuan Crosscutting
@@ -486,8 +492,7 @@ public class PdfRenderer {
                 width,
                 targetHeight,
                 BOX_BODY_FONT,
-                BOX_FONT_SIZE - 1
-        );
+                BOX_FONT_SIZE - 1);
     }
 
     private boolean hasCrosscutting(Node node) {
@@ -508,8 +513,7 @@ public class PdfRenderer {
             float y,
             float width,
             float height,
-            List<TujuanOpd> tujuanOpds
-    ) throws IOException {
+            List<TujuanOpd> tujuanOpds) throws IOException {
 
         if (tujuanOpds.isEmpty()) {
             return;
