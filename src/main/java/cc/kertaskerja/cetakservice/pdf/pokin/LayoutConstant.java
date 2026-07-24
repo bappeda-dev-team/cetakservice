@@ -7,6 +7,8 @@ import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 public final class LayoutConstant {
     public static final float BOX_WIDTH = 120f;
     public static final float BOX_HEIGHT = 80f;
+    public static final float CROSSCUTTING_BOX_HEIGHT = 200f;
+    public static final float TUJUAN_OPD_BOX_HEIGHT = 80f;
 
     public static final float SIBLING_GAP = 15f;
     public static final float LEVEL_GAP = 30f;

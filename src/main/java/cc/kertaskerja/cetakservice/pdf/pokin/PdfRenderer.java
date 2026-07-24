@@ -195,7 +195,10 @@ public class PdfRenderer {
         float parentCenterX = parent.getX() + contentOffsetX;
 
         // posisi y dibawah kotak parent
-        float parentBottomY = pageHeight - parent.getY() - BOX_HEIGHT - contentStartY;
+        float parentBottomY = pageHeight
+                - parent.getY()
+                - NodeSize.from(parent.getNode()).height()
+                - contentStartY;
 
         // jika child hanya 1, vertical connector saja
         if (children.size() == 1) {
@@ -424,7 +427,6 @@ public class PdfRenderer {
                 data.namaPohon());
     }
 
-    private static final float CROSSCUTTING_BOX_HEIGHT = 200f;
     private static final float CROSSCUTTING_PADDING = 6f;
 
     private void drawCrosscutting(
@@ -606,24 +608,8 @@ public class PdfRenderer {
                 .collect(Collectors.joining("\n\n\n\n\n\n\n\n"));
     }
 
-    private final float TUJUAN_OPD_BOX_HEIGHT = 80f;
-
     private NodeSize getNodeSize(Node node) {
-        if (hasCrosscutting(node)) {
-            return new NodeSize(
-                    BOX_WIDTH,
-                    CROSSCUTTING_BOX_HEIGHT);
-        }
-
-        if (hasTujuanOpd(node)) {
-            return new NodeSize(
-                    BOX_WIDTH,
-                    TUJUAN_OPD_BOX_HEIGHT);
-        }
-
-        return new NodeSize(
-                BOX_WIDTH,
-                BOX_HEIGHT);
+        return NodeSize.from(node);
     }
 
     private String sanitize(String text) {

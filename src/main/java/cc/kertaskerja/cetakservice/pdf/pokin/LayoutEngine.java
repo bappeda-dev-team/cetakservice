@@ -54,20 +54,6 @@ public class LayoutEngine {
         return width;
     }
 
-    private float getNodeHeight(Node node) {
-        if (node.nodeMetadata() != null && node.nodeMetadata().isCrosscutting()) {
-            return 150f; // samakan dengan CROSSCUTTING_BOX_HEIGHT saat ini
-        }
-
-        if (node.nodeMetadata() != null
-                && node.nodeMetadata().tujuanOpds() != null
-                && !node.nodeMetadata().tujuanOpds().isEmpty()) {
-            return 80f; // samakan dengan TUJUAN_OPD_BOX_HEIGHT
-        }
-
-        return BOX_HEIGHT;
-    }
-
     private void layoutPosition(LayoutNode node, float areaLeft, float top) {
 
         node.setX(areaLeft + node.getSubtreeWidth() / 2f);
@@ -82,7 +68,7 @@ public class LayoutEngine {
             layoutPosition(
                     child,
                     childAreaLeft,
-                    top + getNodeHeight(node.getNode()) + LEVEL_GAP);
+                    top + NodeSize.from(node.getNode()).height() + LEVEL_GAP);
 
             childAreaLeft += childWidth + SIBLING_GAP;
         }
