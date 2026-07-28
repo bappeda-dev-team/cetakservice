@@ -65,6 +65,15 @@ public class LayoutEngine {
             return 80f; // samakan dengan TUJUAN_OPD_BOX_HEIGHT
         }
 
+        if (node.nodeMetadata() != null
+                && node.nodeMetadata().indikatorPokins() != null
+                && !node.nodeMetadata().indikatorPokins().isEmpty()) {
+            int targetCount = node.nodeMetadata().indikatorPokins().stream()
+                    .mapToInt(indikator -> indikator.targets().size())
+                    .sum();
+            return BOX_HEIGHT + 45f * node.nodeMetadata().indikatorPokins().size() + 22f * targetCount;
+        }
+
         return BOX_HEIGHT;
     }
 

@@ -194,8 +194,11 @@ public class PdfRenderer {
         // posisi x di tengah kotak parent
         float parentCenterX = parent.getX() + contentOffsetX;
 
-        // posisi y dibawah kotak parent
-        float parentBottomY = pageHeight - parent.getY() - BOX_HEIGHT - contentStartY;
+        // Posisi y harus mengikuti tinggi kotak aktual. Node dengan indikator
+        // memiliki tinggi dinamis; memakai BOX_HEIGHT membuat garis menembus body.
+        float parentBottomY = pageHeight - parent.getY()
+                - getNodeSize(parent.getNode()).height()
+                - contentStartY;
 
         // jika child hanya 1, vertical connector saja
         if (children.size() == 1) {
@@ -415,13 +418,14 @@ public class PdfRenderer {
             return;
         }
 
-        drawNamaPokin(
+        drawNamaDanIndikator(
                 content,
                 x,
                 y,
                 width,
                 height,
-                data.namaPohon());
+                data.namaPohon(),
+                data.nodeMetadata().indikatorPokins());
     }
 
     private static final float CROSSCUTTING_BOX_HEIGHT = 200f;
@@ -491,6 +495,12 @@ public class PdfRenderer {
                 !node.nodeMetadata().tujuanOpds().isEmpty();
     }
 
+    private boolean hasIndikatorPokins(Node node) {
+        return node.nodeMetadata() != null
+                && node.nodeMetadata().indikatorPokins() != null
+                && !node.nodeMetadata().indikatorPokins().isEmpty();
+    }
+
     private void drawTujuanOpd(
             PDPageContentStream content,
             float x,
@@ -537,29 +547,51 @@ public class PdfRenderer {
         }
     }
 
-    private void drawNamaPokin(
+    private void drawNamaDanIndikator(
             PDPageContentStream content,
             float x,
             float y,
             float width,
             float height,
-            String namaPohon) throws IOException {
+            String namaPohon,
+            List<IndikatorPokin> indikatorPokins) throws IOException {
 
-        if (namaPohon == null || namaPohon.isBlank()) {
-            return;
-        }
-
-        String sanitizedText = sanitize(namaPohon);
+        String text = (namaPohon == null ? "" : namaPohon) + buildIndikatorText(indikatorPokins);
 
         TextUtils.drawCenteredMultilineText(
                 content,
-                sanitizedText,
+                sanitize(text),
                 x,
                 y,
                 width,
                 height,
                 BOX_BODY_FONT,
                 BOX_FONT_SIZE);
+    }
+
+    private String buildIndikatorText(List<IndikatorPokin> indikatorPokins) {
+        if (indikatorPokins == null || indikatorPokins.isEmpty()) {
+            return "";
+        }
+
+        return indikatorPokins.stream()
+                .map(indikator -> {
+                    String targets = indikator.targets().stream()
+                            .map(target -> "Target " + nullToDash(target.tahun()) + ": "
+                                    + nullToDash(target.target()) + " " + nullToEmpty(target.satuan()))
+                            .collect(Collectors.joining("\n"));
+                    return "\n\nINDIKATOR\n" + nullToDash(indikator.namaIndikator())
+                            + (targets.isBlank() ? "" : "\n" + targets);
+                })
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String nullToDash(String value) {
+        return value == null || value.isBlank() ? "-" : value;
+    }
+
+    private String nullToEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     private String buildCrosscuttingPemberi(Node node) {
@@ -619,6 +651,15 @@ public class PdfRenderer {
             return new NodeSize(
                     BOX_WIDTH,
                     TUJUAN_OPD_BOX_HEIGHT);
+        }
+
+        if (hasIndikatorPokins(node)) {
+            int targetCount = node.nodeMetadata().indikatorPokins().stream()
+                    .mapToInt(indikator -> indikator.targets().size())
+                    .sum();
+            return new NodeSize(
+                    BOX_WIDTH,
+                    BOX_HEIGHT + 45f * node.nodeMetadata().indikatorPokins().size() + 22f * targetCount);
         }
 
         return new NodeSize(

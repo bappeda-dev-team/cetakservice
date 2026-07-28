@@ -9,6 +9,9 @@ public record PokinMetadata(
         Boolean isCrosscutting,
 
         @JsonProperty("crosscutting_pokins")
-        List<CrossCuttingPokin> crossCuttingPokins
+        List<CrossCuttingPokin> crossCuttingPokins,
+
+        @JsonProperty("indikator_pokins")
+        List<IndikatorPokin> indikatorPokins
 ) {
 }
