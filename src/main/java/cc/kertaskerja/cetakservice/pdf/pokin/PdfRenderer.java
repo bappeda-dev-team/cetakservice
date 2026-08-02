@@ -428,7 +428,6 @@ public class PdfRenderer {
                 data.nodeMetadata().indikatorPokins());
     }
 
-    private static final float CROSSCUTTING_BOX_HEIGHT = 200f;
     private static final float CROSSCUTTING_PADDING = 6f;
 
     private void drawCrosscutting(
@@ -513,13 +512,13 @@ public class PdfRenderer {
             return;
         }
 
-        float itemHeight = height / tujuanOpds.size();
-
-        float currentY = y + height - itemHeight;
+        float currentY = y + height;
 
         for (int i = 0; i < tujuanOpds.size(); i++) {
 
             TujuanOpd tujuan = tujuanOpds.get(i);
+            float itemHeight = NodeSizeCalculator.tujuanItemHeight(tujuan.namaTujuan());
+            currentY -= itemHeight;
 
             String sanitizedText = sanitize(tujuan.namaTujuan());
 
@@ -532,8 +531,6 @@ public class PdfRenderer {
                     itemHeight,
                     BOX_BODY_FONT,
                     BOX_FONT_SIZE);
-
-            currentY -= itemHeight;
 
             // // Garis pemisah antar tujuan (kecuali yang terakhir)
             // if (i < tujuanOpds.size() - 1) {
@@ -638,33 +635,8 @@ public class PdfRenderer {
                 .collect(Collectors.joining("\n\n\n\n\n\n\n\n"));
     }
 
-    private final float TUJUAN_OPD_BOX_HEIGHT = 80f;
-
     private NodeSize getNodeSize(Node node) {
-        if (hasCrosscutting(node)) {
-            return new NodeSize(
-                    BOX_WIDTH,
-                    CROSSCUTTING_BOX_HEIGHT);
-        }
-
-        if (hasTujuanOpd(node)) {
-            return new NodeSize(
-                    BOX_WIDTH,
-                    TUJUAN_OPD_BOX_HEIGHT);
-        }
-
-        if (hasIndikatorPokins(node)) {
-            int targetCount = node.nodeMetadata().indikatorPokins().stream()
-                    .mapToInt(indikator -> indikator.targets().size())
-                    .sum();
-            return new NodeSize(
-                    BOX_WIDTH,
-                    BOX_HEIGHT + 45f * node.nodeMetadata().indikatorPokins().size() + 22f * targetCount);
-        }
-
-        return new NodeSize(
-                BOX_WIDTH,
-                BOX_HEIGHT);
+        return NodeSizeCalculator.getNodeSize(node);
     }
 
     private String sanitize(String text) {
