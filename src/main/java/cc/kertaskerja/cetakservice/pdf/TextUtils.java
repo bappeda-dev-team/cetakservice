@@ -38,7 +38,8 @@ public final class TextUtils {
             float fontSize,
             Color textColor) throws IOException {
 
-        float textWidth = font.getStringWidth(text) / 1000 * fontSize;
+        String sanitizedText = sanitizeForFont(text, font);
+        float textWidth = font.getStringWidth(sanitizedText) / 1000 * fontSize;
 
         float textX = x + (width - textWidth) / 2;
 
@@ -49,7 +50,7 @@ public final class TextUtils {
         content.setNonStrokingColor(textColor);
         content.setFont(font, fontSize);
         content.newLineAtOffset(textX, textY);
-        content.showText(text);
+        content.showText(sanitizedText);
         content.endText();
         content.setNonStrokingColor(Color.BLACK);
     }
@@ -129,6 +130,8 @@ public final class TextUtils {
             return lines;
         }
 
+        text = sanitizeForFont(text, font);
+
         for (String sourceLine : text.split("\\R", -1)) {
 
             if (sourceLine.isBlank()) {
@@ -164,6 +167,40 @@ public final class TextUtils {
         }
 
         return lines;
+    }
+
+    /**
+     * Font standar PDF (misalnya Helvetica dengan WinAnsiEncoding) tidak dapat
+     * menulis emoji dan sebagian karakter Unicode. Ganti karakter tersebut agar
+     * pengukuran lebar maupun showText tidak gagal saat mencetak.
+     */
+    private static String sanitizeForFont(String text, PDFont font) throws IOException {
+        StringBuilder sanitized = new StringBuilder();
+
+        for (int index = 0; index < text.length();) {
+            int codePoint = text.codePointAt(index);
+
+            // Newline diproses oleh wrapText sebagai pemisah baris, bukan
+            // dicetak langsung oleh font. Jangan ubah menjadi '?'.
+            if (codePoint == '\n' || codePoint == '\r') {
+                sanitized.appendCodePoint(codePoint);
+                index += Character.charCount(codePoint);
+                continue;
+            }
+
+            String character = new String(Character.toChars(codePoint));
+
+            try {
+                font.getStringWidth(character);
+                sanitized.append(character);
+            } catch (IllegalArgumentException exception) {
+                sanitized.append('?');
+            }
+
+            index += Character.charCount(codePoint);
+        }
+
+        return sanitized.toString();
     }
 
     public static void drawJudulHalaman(

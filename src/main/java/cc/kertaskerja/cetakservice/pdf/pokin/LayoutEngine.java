@@ -75,6 +75,7 @@ public class LayoutEngine {
         }
 
         return BOX_HEIGHT;
+        // return NodeSizeCalculator.getNodeSize(node).height();
     }
 
     private void layoutPosition(LayoutNode node, float areaLeft, float top) {
