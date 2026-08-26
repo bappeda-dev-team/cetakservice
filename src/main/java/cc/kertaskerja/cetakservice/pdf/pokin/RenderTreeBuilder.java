@@ -30,7 +30,7 @@ public class RenderTreeBuilder {
                 cursor = copy;
             }
 
-            current = cloneSubTree(pagePlan.current(), pagePlan.sequence());
+            current = cloneSubTree(pagePlan.current(), String.valueOf(pagePlan.sequence()));
 
             cursor.children().add(current);
 
@@ -46,7 +46,7 @@ public class RenderTreeBuilder {
         for (Node child : root.children()) {
 
             copy.children().add(
-                    cloneNode(child, nomor++)
+                    cloneNode(child, String.valueOf(nomor++))
             );
         }
 
@@ -57,7 +57,7 @@ public class RenderTreeBuilder {
         return cloneNode(node, null);
     }
 
-    private Node cloneNode(Node node, Integer nomor) {
+    private Node cloneNode(Node node, String nomor) {
 
         NodeMetadata metadata = nomor == null
                 ? node.nodeMetadata()
@@ -78,16 +78,20 @@ public class RenderTreeBuilder {
         return cloneSubTree(node, null);
     }
 
-    private Node cloneSubTree(Node node, Integer nomor) {
+    private Node cloneSubTree(Node node, String nomor) {
 
         Node copy = cloneNode(node, nomor);
 
         int childNumber = 1;
 
         for (Node child : node.children()) {
+            String childNomor = child.levelPohon() != null && child.levelPohon() >= 8 && nomor != null
+                    ? nomor + "." + childNumber
+                    : String.valueOf(childNumber);
             copy.children().add(
-                    cloneSubTree(child, childNumber++)
+                    cloneSubTree(child, childNomor)
             );
+            childNumber++;
         }
 
         return copy;

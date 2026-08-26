@@ -11,6 +11,8 @@ public class LayoutNode {
     private float y;
 
     private float subtreeWidth;
+    private float subtreeHeight;
+    private boolean stackChildrenVertically;
 
     private final List<LayoutNode> children = new ArrayList<>();
 
@@ -44,6 +46,22 @@ public class LayoutNode {
 
     public void setSubtreeWidth(float subtreeWidth) {
         this.subtreeWidth = subtreeWidth;
+    }
+
+    public float getSubtreeHeight() {
+        return subtreeHeight;
+    }
+
+    public void setSubtreeHeight(float subtreeHeight) {
+        this.subtreeHeight = subtreeHeight;
+    }
+
+    public boolean isStackChildrenVertically() {
+        return stackChildrenVertically;
+    }
+
+    public void setStackChildrenVertically(boolean stackChildrenVertically) {
+        this.stackChildrenVertically = stackChildrenVertically;
     }
 
     public List<LayoutNode> getChildren() {
