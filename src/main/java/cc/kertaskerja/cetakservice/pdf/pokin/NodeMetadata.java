@@ -6,7 +6,7 @@ import cc.kertaskerja.cetakservice.client.perencanaan.domain.PokinOpd;
 import java.util.List;
 
 public record NodeMetadata(
-        Integer nomor,
+        String nomor,
         String kodeOpd,
         List<TujuanOpd> tujuanOpds,
         boolean isCrosscutting,
@@ -18,7 +18,7 @@ public record NodeMetadata(
                 new TujuanOpd(tj.tujuan())
         ).toList();
 
-        return new NodeMetadata(1,
+        return new NodeMetadata("1",
                 item.kodeOpd(),
                 tujuanOpds,
                 false,
@@ -76,7 +76,7 @@ public record NodeMetadata(
         );
     }
 
-    public NodeMetadata withNomor(Integer nomor) {
+    public NodeMetadata withNomor(String nomor) {
         return new NodeMetadata(
                 nomor,
                 kodeOpd,

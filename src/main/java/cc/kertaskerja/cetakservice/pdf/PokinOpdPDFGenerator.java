@@ -17,13 +17,15 @@ public class PokinOpdPDFGenerator {
     private final PdfRenderer pdfRenderer;
     private final ViewGenerator viewGenerator;
     private final RenderTreeBuilder renderTreeBuilder;
+    private final LayoutPaginator layoutPaginator;
 
     public PokinOpdPDFGenerator(LayoutEngine layoutEngine, PdfRenderer pdfRenderer, ViewGenerator viewGenerator,
-            RenderTreeBuilder renderTreeBuilder) {
+            RenderTreeBuilder renderTreeBuilder, LayoutPaginator layoutPaginator) {
         this.layoutEngine = layoutEngine;
         this.pdfRenderer = pdfRenderer;
         this.viewGenerator = viewGenerator;
         this.renderTreeBuilder = renderTreeBuilder;
+        this.layoutPaginator = layoutPaginator;
     }
 
     private PDRectangle createCoverPageSize(LayoutResult layout) {
@@ -65,25 +67,25 @@ public class PokinOpdPDFGenerator {
             List<PagePlan> plans = viewGenerator.generate(root, ViewMode.OPD);
 
             for (PagePlan pagePlan : plans) {
-                PDPage page = new PDPage(PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A0));
-                document.addPage(page);
-
                 RenderTree renderTree = renderTreeBuilder.build(pagePlan);
                 LayoutResult layout = layoutEngine.layout(renderTree.root());
-
                 String judulHalaman = "%s %d - %s".formatted(
                         renderTree.current().jenisPohon().getLabel(),
                         pagePlan.sequence(),
                         renderTree.current().namaPohon());
 
-                RenderPage renderPage = new RenderPage(
-                        judulHalaman,
-                        renderTree.current().jenisPohon().getLabel(),
-                        renderTree.current().namaPohon(),
-                        layout);
-
-                try (PDPageContentStream content = new PDPageContentStream(document, page)) {
-                    pdfRenderer.render(page, content, renderPage);
+                PDRectangle pageSize = PageOrientation.LANDSCAPE.createRectangle(PDRectangle.A0);
+                for (PageSegment segment : layoutPaginator.paginate(layout, pageSize)) {
+                    PDPage page = new PDPage(pageSize);
+                    document.addPage(page);
+                    String title = segment.total() == 1 ? judulHalaman
+                            : "%s (Bagian %d dari %d)".formatted(judulHalaman, segment.number(), segment.total());
+                    RenderPage renderPage = new RenderPage(title,
+                            renderTree.current().jenisPohon().getLabel(), renderTree.current().namaPohon(),
+                            layout, segment.startY());
+                    try (PDPageContentStream content = new PDPageContentStream(document, page)) {
+                        pdfRenderer.render(page, content, renderPage);
+                    }
                 }
             }
 

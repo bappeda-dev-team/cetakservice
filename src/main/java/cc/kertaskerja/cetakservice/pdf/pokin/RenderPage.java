@@ -4,6 +4,10 @@ public record RenderPage(
         String judulHalaman,
         String title,
         String subTitle,
-        LayoutResult layout
+        LayoutResult layout,
+        float verticalOffset
 ) {
+    public RenderPage(String judulHalaman, String title, String subTitle, LayoutResult layout) {
+        this(judulHalaman, title, subTitle, layout, 0f);
+    }
 }

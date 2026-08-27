@@ -16,6 +16,7 @@ import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAGE_MARGIN_T
 import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.PAPER_MARGIN_TOP;
 import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.TITLE_PAGE_PADDING;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,7 +58,14 @@ public class PdfRenderer {
 
         drawContentBorder(content, contentArea);
 
-        drawTree(content, page, renderPage.layout().root(), contentOffsetX, contentStartY - 5f);
+        // Pohon dapat merupakan lanjutan halaman sebelumnya. Clip memastikan
+        // tidak ada bagian yang keluar dari bingkai cetak.
+        content.saveGraphicsState();
+        content.addRect(contentArea.x(), contentArea.y(), contentArea.width(), contentArea.height());
+        content.clip();
+        drawTree(content, page, renderPage.layout().root(), contentOffsetX,
+                contentStartY - 5f - renderPage.verticalOffset());
+        content.restoreGraphicsState();
     }
 
     public void renderCover(
@@ -200,6 +208,12 @@ public class PdfRenderer {
                 - getNodeSize(parent.getNode()).height()
                 - contentStartY;
 
+        if (parent.isStackChildrenVertically()) {
+            drawStackedChildConnectors(
+                    content, pageHeight, parent, children, contentOffsetX, contentStartY, parentCenterX, parentBottomY);
+            return;
+        }
+
         // jika child hanya 1, vertical connector saja
         if (children.size() == 1) {
 
@@ -255,6 +269,22 @@ public class PdfRenderer {
                     busY,
                     childTopY);
         }
+    }
+
+    private void drawStackedChildConnectors(
+            PDPageContentStream content,
+            float pageHeight,
+            LayoutNode parent,
+            List<LayoutNode> children,
+            float contentOffsetX,
+            float contentStartY,
+            float parentCenterX,
+            float parentBottomY) throws IOException {
+
+        // Semua child bertumpuk pada pusat X yang sama. Garis dibuat lurus di
+        // tengah; isi putih setiap kotak menutup bagian garis yang berada di body.
+        float lastChildTopY = pageHeight - children.getLast().getY() - contentStartY;
+        ShapeUtils.drawVerticalLine(content, parentCenterX, parentBottomY, lastChildTopY);
     }
 
     private static final float BODY_TOP_PADDING = 4f;
@@ -317,6 +347,8 @@ public class PdfRenderer {
             float width,
             float height) throws IOException {
 
+        ShapeUtils.drawFilledRect(content, x, y, width, height, Color.WHITE);
+
         // Border luar
         content.addRect(
                 x,
@@ -362,10 +394,10 @@ public class PdfRenderer {
 
     private String headerTitle(LayoutNode node) {
         String label = node.getNode().jenisPohon().getLabel();
-        Integer id = node.getNode().nodeMetadata().nomor();
+        String id = node.getNode().nodeMetadata().nomor();
         Integer level = node.getNode().levelPohon();
         // id root OPD di-set -1 (bukan id nyata), jadi jangan tampilkan
-        if (id == null || id < 0 || level == 0) {
+        if (id == null || level == 0) {
             return label;
         }
         return label + " " + id;
@@ -494,11 +526,11 @@ public class PdfRenderer {
                 !node.nodeMetadata().tujuanOpds().isEmpty();
     }
 
-    private boolean hasIndikatorPokins(Node node) {
-        return node.nodeMetadata() != null
-                && node.nodeMetadata().indikatorPokins() != null
-                && !node.nodeMetadata().indikatorPokins().isEmpty();
-    }
+//     private boolean hasIndikatorPokins(Node node) {
+//         return node.nodeMetadata() != null
+//                 && node.nodeMetadata().indikatorPokins() != null
+//                 && !node.nodeMetadata().indikatorPokins().isEmpty();
+//     }
 
     private void drawTujuanOpd(
             PDPageContentStream content,

@@ -9,10 +9,10 @@ public class LayoutEngine {
 
     public LayoutResult layout(Node root) {
         // konversi dari Node ke LayoutNode (skema node pohon)
-        LayoutNode layoutRoot = toLayoutTree(root);
+        LayoutNode layoutRoot = toLayoutTree(root, false);
 
         // cek lebar child dan assign ke layoutRoot (impure lah)
-        calculateSubTreeWidth(layoutRoot);
+        calculateSubTreeSize(layoutRoot);
 
         layoutPosition(layoutRoot, 0, PAPER_MARGIN_TOP);
 
@@ -23,65 +23,107 @@ public class LayoutEngine {
         return new LayoutResult(layoutRoot, layoutBound);
     }
 
-    private LayoutNode toLayoutTree(Node node) {
+    private LayoutNode toLayoutTree(Node node, boolean belowOperationalLevelSix) {
         LayoutNode layout = new LayoutNode(node);
+        boolean inOperationalLevelSixBranch = belowOperationalLevelSix || isOperationalLevelSix(node);
 
         for (Node child : node.children()) {
-            layout.addChild(toLayoutTree(child));
+            layout.addChild(toLayoutTree(child, inOperationalLevelSixBranch));
         }
+
+        layout.setStackChildrenVertically(
+                (inOperationalLevelSixBranch
+                        && node.children().stream().anyMatch(this::isOperationalExtension))
+                        // Operational yang berada di bawah Tactical juga harus mengalir ke
+                        // bawah. Bila disusun mendatar, jumlah Operational yang banyak akan
+                        // selalu melewati batas lebar kertas.
+                        || hasOnlyOperationalChildren(node));
 
         return layout;
     }
 
-    private float calculateSubTreeWidth(LayoutNode node) {
+    private boolean isOperationalLevelSix(Node node) {
+        return node.levelPohon() != null
+                && node.levelPohon() == 6
+                && isOperational(node.jenisPohon());
+    }
+
+    private boolean isOperational(JenisPohon jenisPohon) {
+        return jenisPohon == JenisPohon.OPERATIONAL
+                || jenisPohon == JenisPohon.OPERATIONAL_PEMDA
+                || jenisPohon == JenisPohon.OPERATIONAL_CROSSCUTTING
+                || jenisPohon == JenisPohon.OPERATIONAL_N
+                || jenisPohon == JenisPohon.OPERATIONAL_N_CROSSCUTTING;
+    }
+
+    private boolean isOperationalExtension(Node node) {
+        return node.jenisPohon() == JenisPohon.OPERATIONAL_N
+                || node.jenisPohon() == JenisPohon.OPERATIONAL_N_CROSSCUTTING
+                || (node.levelPohon() != null && node.levelPohon() > 6);
+    }
+
+    private boolean hasOnlyOperationalChildren(Node node) {
+        return !node.children().isEmpty()
+                && node.children().stream().allMatch(child -> isOperational(child.jenisPohon()));
+    }
+
+    private void calculateSubTreeSize(LayoutNode node) {
         if (node.isLeaf()) {
             node.setSubtreeWidth(BOX_WIDTH);
-            return BOX_WIDTH;
+            node.setSubtreeHeight(getNodeHeight(node.getNode()));
+            return;
         }
 
-        float total = 0f;
+        float totalWidth = 0f;
+        float maxHeight = 0f;
 
         for (LayoutNode child : node.getChildren()) {
-            total += calculateSubTreeWidth(child);
+            calculateSubTreeSize(child);
+            totalWidth += child.getSubtreeWidth();
+            maxHeight = Math.max(maxHeight, child.getSubtreeHeight());
         }
 
-        total += (node.getChildren().size() - 1) * SIBLING_GAP;
+        if (node.isStackChildrenVertically()) {
+            float maxWidth = node.getChildren().stream()
+                    .map(LayoutNode::getSubtreeWidth)
+                    .max(Float::compare)
+                    .orElse(BOX_WIDTH);
+            float totalHeight = node.getChildren().stream()
+                    .map(LayoutNode::getSubtreeHeight)
+                    .reduce(0f, Float::sum);
 
-        float width = Math.max(total, BOX_WIDTH);
+            node.setSubtreeWidth(Math.max(maxWidth, BOX_WIDTH));
+            node.setSubtreeHeight(getNodeHeight(node.getNode())
+                    + LEVEL_GAP
+                    + totalHeight
+                    + (node.getChildren().size() - 1) * LEVEL_GAP);
+            return;
+        }
 
-        node.setSubtreeWidth(width);
+        totalWidth += (node.getChildren().size() - 1) * SIBLING_GAP;
 
-        return width;
+        node.setSubtreeWidth(Math.max(totalWidth, BOX_WIDTH));
+        node.setSubtreeHeight(getNodeHeight(node.getNode()) + LEVEL_GAP + maxHeight);
     }
 
     private float getNodeHeight(Node node) {
-        if (node.nodeMetadata() != null && node.nodeMetadata().isCrosscutting()) {
-            return 150f; // samakan dengan CROSSCUTTING_BOX_HEIGHT saat ini
-        }
-
-        if (node.nodeMetadata() != null
-                && node.nodeMetadata().tujuanOpds() != null
-                && !node.nodeMetadata().tujuanOpds().isEmpty()) {
-            return 80f; // samakan dengan TUJUAN_OPD_BOX_HEIGHT
-        }
-
-        if (node.nodeMetadata() != null
-                && node.nodeMetadata().indikatorPokins() != null
-                && !node.nodeMetadata().indikatorPokins().isEmpty()) {
-            int targetCount = node.nodeMetadata().indikatorPokins().stream()
-                    .mapToInt(indikator -> indikator.targets().size())
-                    .sum();
-            return BOX_HEIGHT + 45f * node.nodeMetadata().indikatorPokins().size() + 22f * targetCount;
-        }
-
-        return BOX_HEIGHT;
-        // return NodeSizeCalculator.getNodeSize(node).height();
+        return NodeSizeCalculator.getNodeSize(node).height();
     }
 
     private void layoutPosition(LayoutNode node, float areaLeft, float top) {
 
         node.setX(areaLeft + node.getSubtreeWidth() / 2f);
         node.setY(top);
+
+        if (node.isStackChildrenVertically()) {
+            float childTop = top + getNodeHeight(node.getNode()) + LEVEL_GAP;
+
+            for (LayoutNode child : node.getChildren()) {
+                layoutPosition(child, node.getX() - child.getSubtreeWidth() / 2f, childTop);
+                childTop += child.getSubtreeHeight() + LEVEL_GAP;
+            }
+            return;
+        }
 
         float childAreaLeft = areaLeft;
 
