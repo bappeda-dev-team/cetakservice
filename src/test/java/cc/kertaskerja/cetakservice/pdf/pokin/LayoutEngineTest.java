@@ -23,7 +23,7 @@ class LayoutEngineTest {
         Node root = new Node(1, 0, 5, JenisPohon.TACTICAL, "Tactical", null,
                 new ArrayList<>(List.of(operational)));
 
-        LayoutNode layoutOperational = new LayoutEngine().layout(root).root().getChildren().getFirst();
+        LayoutNode layoutOperational = new LayoutEngine().layout(root, ViewMode.OPD).root().getChildren().getFirst();
         LayoutNode firstExtension = layoutOperational.getChildren().getFirst();
         LayoutNode secondExtension = layoutOperational.getChildren().get(1);
         LayoutNode firstLevelEight = firstExtension.getChildren().getFirst();
@@ -47,13 +47,29 @@ class LayoutEngineTest {
         Node tactical = new Node(1, 0, 5, JenisPohon.TACTICAL_PEMDA, "Tactical", null,
                 new ArrayList<>(List.of(operational1, operational2)));
 
-        LayoutNode layoutTactical = new LayoutEngine().layout(tactical).root();
+        LayoutNode layoutTactical = new LayoutEngine().layout(tactical, ViewMode.PEMDA).root();
         LayoutNode firstOperational = layoutTactical.getChildren().getFirst();
         LayoutNode secondOperational = layoutTactical.getChildren().get(1);
 
         assertTrue(layoutTactical.isStackChildrenVertically());
         assertEquals(firstOperational.getX(), secondOperational.getX());
         assertTrue(secondOperational.getY() > firstOperational.getY());
+    }
+
+    @Test
+    void keeps_operational_siblings_side_by_side_for_opd() {
+        Node operational1 = node(2, 1, 6, JenisPohon.OPERATIONAL);
+        Node operational2 = node(3, 1, 6, JenisPohon.OPERATIONAL);
+        Node tactical = new Node(1, 0, 5, JenisPohon.TACTICAL, "Tactical", null,
+                new ArrayList<>(List.of(operational1, operational2)));
+
+        LayoutNode layoutTactical = new LayoutEngine().layout(tactical, ViewMode.OPD).root();
+        LayoutNode firstOperational = layoutTactical.getChildren().getFirst();
+        LayoutNode secondOperational = layoutTactical.getChildren().get(1);
+
+        assertTrue(!layoutTactical.isStackChildrenVertically());
+        assertTrue(secondOperational.getX() > firstOperational.getX());
+        assertEquals(firstOperational.getY(), secondOperational.getY());
     }
 
     private static Node node(int id, int parentId, int level, JenisPohon jenisPohon) {

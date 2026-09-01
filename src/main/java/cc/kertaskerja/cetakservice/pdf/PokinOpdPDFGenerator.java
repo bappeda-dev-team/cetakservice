@@ -50,7 +50,7 @@ public class PokinOpdPDFGenerator {
                 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
 
             Node coverTree = renderTreeBuilder.buildCover(root);
-            LayoutResult layoutCover = layoutEngine.layout(coverTree);
+            LayoutResult layoutCover = layoutEngine.layout(coverTree, ViewMode.OPD);
 
             PDPage pageCover = new PDPage(createCoverPageSize(layoutCover));
             document.addPage(pageCover);
@@ -68,7 +68,7 @@ public class PokinOpdPDFGenerator {
 
             for (PagePlan pagePlan : plans) {
                 RenderTree renderTree = renderTreeBuilder.build(pagePlan);
-                LayoutResult layout = layoutEngine.layout(renderTree.root());
+                LayoutResult layout = layoutEngine.layout(renderTree.root(), ViewMode.OPD);
                 String judulHalaman = "%s %d - %s".formatted(
                         renderTree.current().jenisPohon().getLabel(),
                         pagePlan.sequence(),

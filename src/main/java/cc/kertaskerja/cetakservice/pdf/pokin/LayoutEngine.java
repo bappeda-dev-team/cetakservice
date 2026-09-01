@@ -8,8 +8,12 @@ import static cc.kertaskerja.cetakservice.pdf.pokin.LayoutConstant.*;
 public class LayoutEngine {
 
     public LayoutResult layout(Node root) {
+        return layout(root, ViewMode.PEMDA);
+    }
+
+    public LayoutResult layout(Node root, ViewMode mode) {
         // konversi dari Node ke LayoutNode (skema node pohon)
-        LayoutNode layoutRoot = toLayoutTree(root, false);
+        LayoutNode layoutRoot = toLayoutTree(root, mode, false);
 
         // cek lebar child dan assign ke layoutRoot (impure lah)
         calculateSubTreeSize(layoutRoot);
@@ -23,23 +27,30 @@ public class LayoutEngine {
         return new LayoutResult(layoutRoot, layoutBound);
     }
 
-    private LayoutNode toLayoutTree(Node node, boolean belowOperationalLevelSix) {
+    private LayoutNode toLayoutTree(Node node, ViewMode mode, boolean belowOperationalLevelSix) {
         LayoutNode layout = new LayoutNode(node);
         boolean inOperationalLevelSixBranch = belowOperationalLevelSix || isOperationalLevelSix(node);
 
         for (Node child : node.children()) {
-            layout.addChild(toLayoutTree(child, inOperationalLevelSixBranch));
+            layout.addChild(toLayoutTree(child, mode, inOperationalLevelSixBranch));
         }
 
-        layout.setStackChildrenVertically(
-                (inOperationalLevelSixBranch
-                        && node.children().stream().anyMatch(this::isOperationalExtension))
-                        // Operational yang berada di bawah Tactical juga harus mengalir ke
-                        // bawah. Bila disusun mendatar, jumlah Operational yang banyak akan
-                        // selalu melewati batas lebar kertas.
-                        || hasOnlyOperationalChildren(node));
+        layout.setStackChildrenVertically(shouldStackChildrenVertically(node, mode, inOperationalLevelSixBranch));
 
         return layout;
+    }
+
+    private boolean shouldStackChildrenVertically(
+            Node node, ViewMode mode, boolean inOperationalLevelSixBranch) {
+        return switch (mode) {
+            // Respons Pemda tidak lagi berisi Operational N. Semua sibling Operational
+            // ditampilkan menurun agar lebar pohon tetap sesuai kertas.
+            case PEMDA -> hasOnlyOperationalChildren(node);
+            // Pada OPD, sibling Operational tetap menyamping. Hanya turunan
+            // Operational N (termasuk crosscutting) yang ditampilkan menurun.
+            case OPD -> inOperationalLevelSixBranch
+                    && node.children().stream().anyMatch(this::isOperationalExtension);
+        };
     }
 
     private boolean isOperationalLevelSix(Node node) {
@@ -58,8 +69,7 @@ public class LayoutEngine {
 
     private boolean isOperationalExtension(Node node) {
         return node.jenisPohon() == JenisPohon.OPERATIONAL_N
-                || node.jenisPohon() == JenisPohon.OPERATIONAL_N_CROSSCUTTING
-                || (node.levelPohon() != null && node.levelPohon() > 6);
+                || node.jenisPohon() == JenisPohon.OPERATIONAL_N_CROSSCUTTING;
     }
 
     private boolean hasOnlyOperationalChildren(Node node) {
