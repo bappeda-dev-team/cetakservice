@@ -370,14 +370,7 @@ public class PdfRenderer {
         final float HEADER_PADDING = 20f;
         float headerY = y + height - BOX_HEADER_HEIGHT;
 
-        // background header berwarna sesuai level
-        ShapeUtils.drawFilledRect(
-                content,
-                x,
-                headerY,
-                width,
-                BOX_HEADER_HEIGHT,
-                node.getNode().jenisPohon().getHeaderColor());
+        drawHeaderBackground(content, x, headerY, width, BOX_HEADER_HEIGHT, node.getNode().jenisPohon());
 
         // judul pokin: "LABEL id" (mengikuti tampilan web, mis. "Startegic 665")
         TextUtils.drawCenteredText(
@@ -390,6 +383,41 @@ public class PdfRenderer {
                 BOX_HEADER_FONT,
                 BOX_HEADER_FONT_SIZE,
                 node.getNode().jenisPohon().getTextColor());
+    }
+
+    private void drawHeaderBackground(
+            PDPageContentStream content,
+            float x,
+            float y,
+            float width,
+            float height,
+            JenisPohon jenisPohon) throws IOException {
+        Color start = jenisPohon.getHeaderColor();
+        Color end = jenisPohon.getHeaderGradientEndColor();
+
+        if (start.equals(end)) {
+            ShapeUtils.drawFilledRect(content, x, y, width, height, start);
+            return;
+        }
+
+        // CSS memakai from-40%: warna awal dipertahankan sampai 40%, lalu
+        // bergradasi menuju warna akhir. Dibuat dengan strip kecil agar tetap
+        // kompatibel dengan renderer PDFBox tanpa menggunakan shadow.
+        final int strips = 60;
+        for (int index = 0; index < strips; index++) {
+            float left = x + width * index / strips;
+            float right = x + width * (index + 1) / strips;
+            float position = (index + 0.5f) / strips;
+            float progress = Math.max(0f, (position - 0.4f) / 0.6f);
+            ShapeUtils.drawFilledRect(content, left, y, right - left, height, interpolate(start, end, progress));
+        }
+    }
+
+    private Color interpolate(Color start, Color end, float progress) {
+        return new Color(
+                Math.round(start.getRed() + (end.getRed() - start.getRed()) * progress),
+                Math.round(start.getGreen() + (end.getGreen() - start.getGreen()) * progress),
+                Math.round(start.getBlue() + (end.getBlue() - start.getBlue()) * progress));
     }
 
     private String headerTitle(LayoutNode node) {

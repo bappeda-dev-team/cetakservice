@@ -54,7 +54,7 @@ public class PokinPemdaPDFGenerator {
             Node root = roots.getFirst();
 
             Node coverTree = renderTreeBuilder.buildCover(root);
-            LayoutResult layoutCover = layoutEngine.layout(coverTree);
+            LayoutResult layoutCover = layoutEngine.layout(coverTree, ViewMode.PEMDA);
 
             PDPage pageCover = new PDPage(createCoverPageSize(layoutCover));
             document.addPage(pageCover);
@@ -72,7 +72,7 @@ public class PokinPemdaPDFGenerator {
 
             for (PagePlan pagePlan : plans) {
                 RenderTree renderTree = renderTreeBuilder.build(pagePlan);
-                LayoutResult layout = layoutEngine.layout(renderTree.root());
+                LayoutResult layout = layoutEngine.layout(renderTree.root(), ViewMode.PEMDA);
                 String judulHalaman = "%s %d - %s".formatted(
                         renderTree.current().jenisPohon().getLabel(),
                         pagePlan.sequence(),
